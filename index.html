@@ -1,0 +1,1653 @@
+
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>地震のときに危ない部屋の配置チェック</title>
+
+  <!-- Bootstrap 5 のCSSをCDNで読み込み -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: #f5f5f5;
+    }
+
+    #howto {
+      scroll-margin-top: 20px;
+    }
+
+    /* 左側の家具エリア */
+    .side-panel {
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+      border-radius: 12px;
+      padding: 14px;
+      height: 460px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .furniture-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .add-button {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .add-form {
+      display: none;
+      border: 1px solid #dddddd;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: #fafafa;
+      margin-bottom: 10px;
+    }
+
+    .add-form.show {
+      display: block;
+    }
+
+    /* 家具が増えても左だけスクロール */
+    .furniture-scroll {
+      overflow-y: auto;
+      padding-right: 4px;
+      flex: 1;
+    }
+
+    .furniture-item {
+      border: 1px solid #cccccc;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background-color: #ffffff;
+      cursor: grab;
+      text-align: center;
+      font-weight: bold;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .furniture-item:active {
+      cursor: grabbing;
+    }
+
+    /* 中央の間取りエリア */
+    .stage-wrap {
+      overflow: auto;
+    }
+
+    .stage {
+      position: relative;
+      width: 640px;
+      height: 400px;
+      background-color: #f8f9fa;
+      border: 2px solid #bbbbbb;
+      border-radius: 10px;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .cell-layer,
+    .wall-layer,
+    .furniture-layer {
+      position: absolute;
+      inset: 0;
+    }
+
+    .cell-layer,
+    .wall-layer {
+      pointer-events: none;
+    }
+
+    .furniture-layer {
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .grid-cell {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 1px solid #e6e6e6;
+      background-color: #f7f7f7;
+    }
+
+    .grid-cell.active {
+      background-color: #ffffff;
+    }
+
+    .stage.layout-mode .grid-cell {
+      border: 1px dashed #cfcfcf;
+    }
+
+    .stage.layout-mode .grid-cell.active {
+      background-color: #fffdf2;
+    }
+
+    /* 外周の壁 */
+    .wall {
+      position: absolute;
+      background-color: #333333;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .wall.horizontal {
+      height: 4px;
+    }
+
+    .wall.vertical {
+      width: 4px;
+    }
+
+    /* 家具 */
+    .placed-furniture {
+      position: absolute;
+      width: 90px;
+      height: 70px;
+      min-width: 40px;
+      min-height: 40px;
+      border: 2px solid #333333;
+      border-radius: 8px;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: bold;
+      cursor: grab;
+      z-index: 20;
+      user-select: none;
+      touch-action: none;
+      pointer-events: auto;
+    }
+
+    .placed-furniture:active {
+      cursor: grabbing;
+    }
+
+    .furniture-label {
+      pointer-events: none;
+      padding: 2px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .placed-furniture.selected {
+      outline: 3px solid #0d6efd;
+      outline-offset: 2px;
+      background-color: #dbeafe;
+    }
+
+    /* 家具を選択したときだけ見えるサイズ変更の点 */
+    .resize-handle {
+      display: none;
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: #0d6efd;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      z-index: 30;
+    }
+
+    .placed-furniture.selected .resize-handle {
+      display: block;
+    }
+
+    .handle-nw {
+      top: -8px;
+      left: -8px;
+      cursor: nwse-resize;
+    }
+
+    .handle-n {
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: ns-resize;
+    }
+
+    .handle-ne {
+      top: -8px;
+      right: -8px;
+      cursor: nesw-resize;
+    }
+
+    .handle-e {
+      top: 50%;
+      right: -8px;
+      transform: translateY(-50%);
+      cursor: ew-resize;
+    }
+
+    .handle-se {
+      right: -8px;
+      bottom: -8px;
+      cursor: nwse-resize;
+    }
+
+    .handle-s {
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: ns-resize;
+    }
+
+    .handle-sw {
+      left: -8px;
+      bottom: -8px;
+      cursor: nesw-resize;
+    }
+
+    .handle-w {
+      top: 50%;
+      left: -8px;
+      transform: translateY(-50%);
+      cursor: ew-resize;
+    }
+
+    .dragging {
+      opacity: 0.85;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    /* 間取り図風のドア */
+    .door-plan {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      z-index: 25;
+      cursor: grab;
+      touch-action: none;
+      pointer-events: auto;
+    }
+
+    .door-plan:active {
+      cursor: grabbing;
+    }
+
+    .door-gap {
+      position: absolute;
+      background-color: #ffffff;
+      z-index: 26;
+    }
+
+    .door-plan.top .door-gap {
+      left: 4px;
+      top: -5px;
+      width: 32px;
+      height: 10px;
+    }
+
+    .door-plan.bottom .door-gap {
+      left: 4px;
+      bottom: -5px;
+      width: 32px;
+      height: 10px;
+    }
+
+    .door-plan.left .door-gap {
+      left: -5px;
+      top: 4px;
+      width: 10px;
+      height: 32px;
+    }
+
+    .door-plan.right .door-gap {
+      right: -5px;
+      top: 4px;
+      width: 10px;
+      height: 32px;
+    }
+
+    .door-svg {
+      position: absolute;
+      inset: 0;
+      z-index: 27;
+      pointer-events: none;
+    }
+
+    .door-svg path {
+      fill: none;
+      stroke: #198754;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .door-label {
+      position: absolute;
+      z-index: 28;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: #198754;
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 1px 4px;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .door-plan.top .door-label {
+      left: 6px;
+      top: 7px;
+    }
+
+    .door-plan.bottom .door-label {
+      left: 6px;
+      bottom: 7px;
+    }
+
+    .door-plan.left .door-label {
+      left: 7px;
+      top: 12px;
+    }
+
+    .door-plan.right .door-label {
+      right: 7px;
+      top: 12px;
+    }
+
+    /* 下の操作エリア */
+    .control-area {
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .result-box {
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 12px 16px;
+      border-radius: 10px;
+      text-align: center;
+      background-color: #eeeeee;
+      white-space: nowrap;
+    }
+
+    .risk-none {
+      color: #333333;
+      border: 2px solid #cccccc;
+      background-color: #eeeeee;
+    }
+
+    .risk-low {
+      color: #0f5132;
+      border: 2px solid #198754;
+      background-color: #d1e7dd;
+    }
+
+    .risk-middle {
+      color: #664d03;
+      border: 2px solid #ffc107;
+      background-color: #fff3cd;
+    }
+
+    .risk-high {
+      color: #842029;
+      border: 2px solid #dc3545;
+      background-color: #f8d7da;
+    }
+
+    .mode-note {
+      font-size: 0.9rem;
+      color: #555555;
+    }
+
+    @media (max-width: 767px) {
+      .side-panel {
+        height: 260px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container-fluid p-3 p-md-4">
+
+    <!-- 最低限のナビゲーションバー -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded mb-3 px-3">
+      <div class="container-fluid p-0">
+
+        <!-- サービス名 -->
+        <a class="navbar-brand fw-bold" href="#">
+          地震のときに危ない部屋の配置チェック
+        </a>
+
+        <!-- ナビバーのリンク -->
+        <div class="navbar-nav">
+          <a class="nav-link" href="#howto">
+            使い方
+          </a>
+        </div>
+
+      </div>
+    </nav>
+
+    <!-- 使い方 -->
+    <section id="howto" class="mb-3">
+      <div class="alert alert-light border mb-0">
+        <strong>使い方：</strong>
+        間取り編集で部屋の形を作り、家具配置で家具を置いてから「判定する」を押します。
+      </div>
+    </section>
+
+    <div class="row g-3">
+
+      <!-- 左側：家具を追加する場所 -->
+      <div class="col-md-3 col-lg-2">
+        <div class="side-panel">
+
+          <div class="furniture-header">
+            <h2 class="h5 mb-0">家具を追加</h2>
+
+            <!-- 小さいプラスボタン -->
+            <button id="openAddFormButton" class="btn btn-primary add-button" type="button">
+              ＋
+            </button>
+          </div>
+
+          <!-- 家具名を入力して追加 -->
+          <div id="addForm" class="add-form">
+            <label for="customFurnitureName" class="form-label mb-1">
+              家具名
+            </label>
+
+            <input
+              id="customFurnitureName"
+              class="form-control form-control-sm mb-2"
+              type="text"
+              placeholder="例：テレビ">
+
+            <div class="d-flex gap-2">
+              <button id="addFurnitureButton" class="btn btn-primary btn-sm w-100" type="button">
+                追加
+              </button>
+
+              <button id="closeAddFormButton" class="btn btn-outline-secondary btn-sm" type="button">
+                閉じる
+              </button>
+            </div>
+          </div>
+
+          <!-- ここだけスクロールできる -->
+          <div id="furnitureList" class="furniture-scroll">
+            <div class="furniture-item" data-name="本棚" data-width="70" data-height="150">本棚</div>
+            <div class="furniture-item" data-name="タンス" data-width="90" data-height="130">タンス</div>
+            <div class="furniture-item" data-name="ベッド" data-width="150" data-height="100">ベッド</div>
+            <div class="furniture-item" data-name="机" data-width="110" data-height="70">机</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 中央：間取りと家具を置く場所 -->
+      <div class="col-md-9 col-lg-10">
+        <div class="stage-wrap">
+          <div id="stage" class="stage furniture-mode">
+
+            <!-- マス目を表示する層 -->
+            <div id="cellLayer" class="cell-layer"></div>
+
+            <!-- 壁を表示する層 -->
+            <div id="wallLayer" class="wall-layer"></div>
+
+            <!-- 出口 -->
+            <div id="door" class="door-plan top">
+              <div class="door-gap"></div>
+
+              <svg class="door-svg" viewBox="0 0 40 40">
+                <path id="doorPath" d=""></path>
+              </svg>
+
+              <div class="door-label">
+                出口
+              </div>
+            </div>
+
+            <!-- 家具を置く層 -->
+            <div id="furnitureLayer" class="furniture-layer"></div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 下：操作エリア -->
+    <div class="control-area mt-3">
+
+      <div class="row g-3 align-items-center">
+
+        <!-- モード切り替え -->
+        <div class="col-auto">
+          <div class="btn-group" role="group" aria-label="モード切り替え">
+            <button id="layoutModeButton" class="btn btn-outline-primary" type="button">
+              間取り編集
+            </button>
+            <button id="furnitureModeButton" class="btn btn-primary" type="button">
+              家具配置
+            </button>
+          </div>
+        </div>
+
+        <!-- 間取り編集で使うボタン -->
+        <div class="col-auto">
+          <div class="btn-group" role="group" aria-label="部屋の追加と削除">
+            <button id="paintAddButton" class="btn btn-success" type="button" disabled>
+              部屋を追加
+            </button>
+            <button id="paintEraseButton" class="btn btn-outline-success" type="button" disabled>
+              部屋を消す
+            </button>
+          </div>
+        </div>
+
+        <!-- 家具や判定の操作 -->
+        <div class="col-auto">
+          <button id="judgeButton" class="btn btn-danger" type="button">
+            判定する
+          </button>
+        </div>
+
+        <div class="col-auto">
+          <button id="deleteButton" class="btn btn-outline-danger" type="button" disabled>
+            選択した家具を削除
+          </button>
+        </div>
+
+        <div class="col-auto">
+          <button id="resetButton" class="btn btn-secondary" type="button">
+            リセット
+          </button>
+        </div>
+
+        <div class="col">
+          <div id="resultBox" class="result-box risk-none">
+            判定結果：未判定
+          </div>
+        </div>
+
+      </div>
+
+      <div id="modeNote" class="mode-note mt-2">
+        家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // ================================
+    // 基本設定
+    // ================================
+    const COLS = 16;
+    const ROWS = 10;
+    const CELL = 40;
+
+    const stage = document.getElementById("stage");
+    const cellLayer = document.getElementById("cellLayer");
+    const wallLayer = document.getElementById("wallLayer");
+    const furnitureLayer = document.getElementById("furnitureLayer");
+
+    const door = document.getElementById("door");
+    const doorPath = document.getElementById("doorPath");
+
+    const furnitureList = document.getElementById("furnitureList");
+    const openAddFormButton = document.getElementById("openAddFormButton");
+    const closeAddFormButton = document.getElementById("closeAddFormButton");
+    const addForm = document.getElementById("addForm");
+    const customFurnitureName = document.getElementById("customFurnitureName");
+    const addFurnitureButton = document.getElementById("addFurnitureButton");
+
+    const layoutModeButton = document.getElementById("layoutModeButton");
+    const furnitureModeButton = document.getElementById("furnitureModeButton");
+    const paintAddButton = document.getElementById("paintAddButton");
+    const paintEraseButton = document.getElementById("paintEraseButton");
+    const judgeButton = document.getElementById("judgeButton");
+    const deleteButton = document.getElementById("deleteButton");
+    const resetButton = document.getElementById("resetButton");
+    const resultBox = document.getElementById("resultBox");
+    const modeNote = document.getElementById("modeNote");
+
+    let currentMode = "furniture";
+    let paintMode = "add";
+
+    let activeCells = new Set();
+
+    let doorState = {
+      row: 1,
+      col: 7,
+      side: "top"
+    };
+
+    let selectedFurniture = null;
+    let draggingElement = null;
+    let pointerMode = null;
+
+    let offsetX = 0;
+    let offsetY = 0;
+
+    let resizeData = null;
+    let isPainting = false;
+
+    const minFurnitureSize = 40;
+
+    // ================================
+    // 初期の間取り
+    // ================================
+    function setInitialRoom() {
+      activeCells.clear();
+
+      // 小さめの長方形から開始
+      for (let row = 1; row <= 7; row++) {
+        for (let col = 3; col <= 12; col++) {
+          activeCells.add(cellKey(row, col));
+        }
+      }
+
+      doorState = {
+        row: 1,
+        col: 7,
+        side: "top"
+      };
+    }
+
+    function cellKey(row, col) {
+      return row + "," + col;
+    }
+
+    function hasCell(row, col) {
+      return activeCells.has(cellKey(row, col));
+    }
+
+    // ================================
+    // マス目と壁を描画
+    // ================================
+    function renderRoom() {
+      renderCells();
+      renderWalls();
+
+      if (!isValidDoorPosition()) {
+        snapDoorToFirstEdge();
+      }
+
+      updateDoorView();
+      resetResult();
+    }
+
+    function renderCells() {
+      cellLayer.innerHTML = "";
+
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          const cell = document.createElement("div");
+
+          cell.className = "grid-cell";
+
+          if (hasCell(row, col)) {
+            cell.classList.add("active");
+          }
+
+          cell.style.left = col * CELL + "px";
+          cell.style.top = row * CELL + "px";
+
+          cellLayer.appendChild(cell);
+        }
+      }
+    }
+
+    function renderWalls() {
+      wallLayer.innerHTML = "";
+
+      activeCells.forEach(key => {
+        const parts = key.split(",");
+        const row = Number(parts[0]);
+        const col = Number(parts[1]);
+
+        if (!hasCell(row - 1, col)) {
+          addWall("horizontal", col * CELL, row * CELL, CELL, 4);
+        }
+
+        if (!hasCell(row + 1, col)) {
+          addWall("horizontal", col * CELL, (row + 1) * CELL - 4, CELL, 4);
+        }
+
+        if (!hasCell(row, col - 1)) {
+          addWall("vertical", col * CELL, row * CELL, 4, CELL);
+        }
+
+        if (!hasCell(row, col + 1)) {
+          addWall("vertical", (col + 1) * CELL - 4, row * CELL, 4, CELL);
+        }
+      });
+    }
+
+    function addWall(type, left, top, width, height) {
+      const wall = document.createElement("div");
+
+      wall.className = "wall " + type;
+      wall.style.left = left + "px";
+      wall.style.top = top + "px";
+      wall.style.width = width + "px";
+      wall.style.height = height + "px";
+
+      wallLayer.appendChild(wall);
+    }
+
+    // ================================
+    // モード切り替え
+    // ================================
+    layoutModeButton.addEventListener("click", () => {
+      setMode("layout");
+    });
+
+    furnitureModeButton.addEventListener("click", () => {
+      setMode("furniture");
+    });
+
+    function setMode(mode) {
+      currentMode = mode;
+      clearSelection();
+
+      if (mode === "layout") {
+        stage.classList.remove("furniture-mode");
+        stage.classList.add("layout-mode");
+
+        layoutModeButton.classList.remove("btn-outline-primary");
+        layoutModeButton.classList.add("btn-primary");
+
+        furnitureModeButton.classList.remove("btn-primary");
+        furnitureModeButton.classList.add("btn-outline-primary");
+
+        paintAddButton.disabled = false;
+        paintEraseButton.disabled = false;
+        deleteButton.disabled = true;
+
+        modeNote.textContent = "間取り編集モード：マスをクリック、またはクリックしたままなぞると部屋をまとめて追加・削除できます。";
+      }
+
+      if (mode === "furniture") {
+        stage.classList.remove("layout-mode");
+        stage.classList.add("furniture-mode");
+
+        furnitureModeButton.classList.remove("btn-outline-primary");
+        furnitureModeButton.classList.add("btn-primary");
+
+        layoutModeButton.classList.remove("btn-primary");
+        layoutModeButton.classList.add("btn-outline-primary");
+
+        paintAddButton.disabled = true;
+        paintEraseButton.disabled = true;
+
+        modeNote.textContent = "家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。";
+      }
+    }
+
+    paintAddButton.addEventListener("click", () => {
+      paintMode = "add";
+      paintAddButton.classList.remove("btn-outline-success");
+      paintAddButton.classList.add("btn-success");
+      paintEraseButton.classList.remove("btn-success");
+      paintEraseButton.classList.add("btn-outline-success");
+    });
+
+    paintEraseButton.addEventListener("click", () => {
+      paintMode = "erase";
+      paintEraseButton.classList.remove("btn-outline-success");
+      paintEraseButton.classList.add("btn-success");
+      paintAddButton.classList.remove("btn-success");
+      paintAddButton.classList.add("btn-outline-success");
+    });
+
+    // ================================
+    // 間取りをクリック、ドラッグで追加・削除
+    // ================================
+    stage.addEventListener("pointerdown", event => {
+      if (currentMode !== "layout") return;
+      if (event.target.closest(".placed-furniture")) return;
+      if (event.target.closest(".door-plan")) return;
+
+      event.preventDefault();
+
+      isPainting = true;
+      paintCellAtPointer(event.clientX, event.clientY);
+
+      document.addEventListener("pointermove", onPaintMove);
+      document.addEventListener("pointerup", stopPainting);
+    });
+
+    function onPaintMove(event) {
+      if (!isPainting) return;
+
+      paintCellAtPointer(event.clientX, event.clientY);
+    }
+
+    function stopPainting() {
+      isPainting = false;
+
+      document.removeEventListener("pointermove", onPaintMove);
+      document.removeEventListener("pointerup", stopPainting);
+    }
+
+    function paintCellAtPointer(clientX, clientY) {
+      const pos = getStagePosition(clientX, clientY);
+
+      if (!pos) return;
+
+      const col = Math.floor(pos.x / CELL);
+      const row = Math.floor(pos.y / CELL);
+
+      if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return;
+
+      const key = cellKey(row, col);
+
+      if (paintMode === "add") {
+        activeCells.add(key);
+      }
+
+      if (paintMode === "erase") {
+        // 部屋が全部なくならないようにする
+        if (activeCells.size > 1) {
+          activeCells.delete(key);
+        }
+      }
+
+      renderRoom();
+    }
+
+    // ================================
+    // 家具リストからドラッグして追加
+    // ================================
+    furnitureList.addEventListener("pointerdown", event => {
+      if (currentMode !== "furniture") return;
+
+      const item = event.target.closest(".furniture-item");
+      if (!item) return;
+
+      event.preventDefault();
+
+      const name = item.dataset.name;
+      const width = Number(item.dataset.width);
+      const height = Number(item.dataset.height);
+
+      const newFurniture = createFurniture(name, width, height);
+
+      document.body.appendChild(newFurniture);
+
+      draggingElement = newFurniture;
+      pointerMode = "newFurniture";
+
+      offsetX = width / 2;
+      offsetY = height / 2;
+
+      newFurniture.classList.add("dragging");
+
+      moveElementOnPage(event.pageX, event.pageY);
+
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", onPointerUp);
+    });
+
+    function createFurniture(name, width, height) {
+      const furniture = document.createElement("div");
+
+      furniture.className = "placed-furniture";
+      furniture.dataset.name = name;
+      furniture.style.width = width + "px";
+      furniture.style.height = height + "px";
+
+      const label = document.createElement("span");
+      label.className = "furniture-label";
+      label.textContent = name;
+
+      furniture.appendChild(label);
+
+      addResizeHandles(furniture);
+      makeFurnitureMovable(furniture);
+
+      return furniture;
+    }
+
+    function makeFurnitureMovable(furniture) {
+      furniture.addEventListener("pointerdown", event => {
+        if (currentMode !== "furniture") return;
+        if (event.target.classList.contains("resize-handle")) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        selectFurniture(furniture);
+
+        draggingElement = furniture;
+        pointerMode = "moveFurniture";
+
+        const rect = furniture.getBoundingClientRect();
+
+        offsetX = event.clientX - rect.left;
+        offsetY = event.clientY - rect.top;
+
+        document.addEventListener("pointermove", onPointerMove);
+        document.addEventListener("pointerup", onPointerUp);
+      });
+    }
+
+    // ================================
+    // 家具の選択
+    // ================================
+    stage.addEventListener("pointerdown", event => {
+      if (currentMode !== "furniture") return;
+
+      if (event.target === stage || event.target === furnitureLayer) {
+        clearSelection();
+      }
+    });
+
+    function selectFurniture(furniture) {
+      clearSelection();
+
+      selectedFurniture = furniture;
+      selectedFurniture.classList.add("selected");
+      deleteButton.disabled = false;
+    }
+
+    function clearSelection() {
+      if (selectedFurniture) {
+        selectedFurniture.classList.remove("selected");
+      }
+
+      selectedFurniture = null;
+      deleteButton.disabled = true;
+    }
+
+    // ================================
+    // サイズ変更用の点
+    // ================================
+    function addResizeHandles(furniture) {
+      const directions = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+
+      directions.forEach(direction => {
+        const handle = document.createElement("span");
+
+        handle.className = "resize-handle handle-" + direction;
+        handle.dataset.direction = direction;
+
+        handle.addEventListener("pointerdown", event => {
+          if (currentMode !== "furniture") return;
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          startResize(event, furniture, direction);
+        });
+
+        furniture.appendChild(handle);
+      });
+    }
+
+    function startResize(event, furniture, direction) {
+      selectFurniture(furniture);
+
+      draggingElement = furniture;
+      pointerMode = "resizeFurniture";
+
+      resizeData = {
+        direction: direction,
+        startX: event.clientX,
+        startY: event.clientY,
+        startLeft: furniture.offsetLeft,
+        startTop: furniture.offsetTop,
+        startWidth: furniture.offsetWidth,
+        startHeight: furniture.offsetHeight
+      };
+
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", onPointerUp);
+    }
+
+    // ================================
+    // ドアを外周の壁に沿って動かす
+    // ================================
+    door.addEventListener("pointerdown", event => {
+      if (currentMode !== "furniture") return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      clearSelection();
+
+      draggingElement = door;
+      pointerMode = "moveDoor";
+
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", onPointerUp);
+    });
+
+    function moveDoorToNearestEdge(clientX, clientY) {
+      const pos = getStagePosition(clientX, clientY);
+      if (!pos) return;
+
+      const edges = getExteriorEdges();
+      if (edges.length === 0) return;
+
+      let bestEdge = edges[0];
+      let bestDistance = Infinity;
+
+      edges.forEach(edge => {
+        const distance = distanceToSegment(
+          pos.x,
+          pos.y,
+          edge.x1,
+          edge.y1,
+          edge.x2,
+          edge.y2
+        );
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestEdge = edge;
+        }
+      });
+
+      doorState = {
+        row: bestEdge.row,
+        col: bestEdge.col,
+        side: bestEdge.side
+      };
+
+      updateDoorView();
+      resetResult();
+    }
+
+    function getExteriorEdges() {
+      const edges = [];
+
+      activeCells.forEach(key => {
+        const parts = key.split(",");
+        const row = Number(parts[0]);
+        const col = Number(parts[1]);
+
+        if (!hasCell(row - 1, col)) {
+          edges.push({
+            row,
+            col,
+            side: "top",
+            x1: col * CELL,
+            y1: row * CELL,
+            x2: (col + 1) * CELL,
+            y2: row * CELL
+          });
+        }
+
+        if (!hasCell(row + 1, col)) {
+          edges.push({
+            row,
+            col,
+            side: "bottom",
+            x1: col * CELL,
+            y1: (row + 1) * CELL,
+            x2: (col + 1) * CELL,
+            y2: (row + 1) * CELL
+          });
+        }
+
+        if (!hasCell(row, col - 1)) {
+          edges.push({
+            row,
+            col,
+            side: "left",
+            x1: col * CELL,
+            y1: row * CELL,
+            x2: col * CELL,
+            y2: (row + 1) * CELL
+          });
+        }
+
+        if (!hasCell(row, col + 1)) {
+          edges.push({
+            row,
+            col,
+            side: "right",
+            x1: (col + 1) * CELL,
+            y1: row * CELL,
+            x2: (col + 1) * CELL,
+            y2: (row + 1) * CELL
+          });
+        }
+      });
+
+      return edges;
+    }
+
+    function isValidDoorPosition() {
+      return isExteriorEdge(doorState.row, doorState.col, doorState.side);
+    }
+
+    function isExteriorEdge(row, col, side) {
+      if (!hasCell(row, col)) return false;
+
+      if (side === "top") return !hasCell(row - 1, col);
+      if (side === "bottom") return !hasCell(row + 1, col);
+      if (side === "left") return !hasCell(row, col - 1);
+      if (side === "right") return !hasCell(row, col + 1);
+
+      return false;
+    }
+
+    function snapDoorToFirstEdge() {
+      const edges = getExteriorEdges();
+
+      if (edges.length === 0) {
+        door.style.display = "none";
+        return;
+      }
+
+      door.style.display = "block";
+
+      doorState = {
+        row: edges[0].row,
+        col: edges[0].col,
+        side: edges[0].side
+      };
+    }
+
+    function updateDoorView() {
+      if (!hasCell(doorState.row, doorState.col)) {
+        snapDoorToFirstEdge();
+      }
+
+      door.style.display = "block";
+
+      door.classList.remove("top", "bottom", "left", "right");
+      door.classList.add(doorState.side);
+
+      door.style.left = doorState.col * CELL + "px";
+      door.style.top = doorState.row * CELL + "px";
+
+      if (doorState.side === "top") {
+        doorPath.setAttribute("d", "M4 2 L4 36 M4 36 A36 36 0 0 1 40 2");
+      }
+
+      if (doorState.side === "bottom") {
+        doorPath.setAttribute("d", "M4 38 L4 4 M4 4 A36 36 0 0 0 40 38");
+      }
+
+      if (doorState.side === "left") {
+        doorPath.setAttribute("d", "M2 4 L36 4 M36 4 A36 36 0 0 1 2 40");
+      }
+
+      if (doorState.side === "right") {
+        doorPath.setAttribute("d", "M38 4 L4 4 M4 4 A36 36 0 0 0 38 40");
+      }
+    }
+
+    // ================================
+    // ドラッグ共通処理
+    // ================================
+    function onPointerMove(event) {
+      if (pointerMode === "newFurniture") {
+        moveElementOnPage(event.pageX, event.pageY);
+      }
+
+      if (pointerMode === "moveFurniture") {
+        moveFurnitureInStage(event.clientX, event.clientY);
+      }
+
+      if (pointerMode === "resizeFurniture") {
+        resizeFurniture(event.clientX, event.clientY);
+      }
+
+      if (pointerMode === "moveDoor") {
+        moveDoorToNearestEdge(event.clientX, event.clientY);
+      }
+    }
+
+    function onPointerUp(event) {
+      if (pointerMode === "newFurniture") {
+        placeNewFurniture(event);
+      }
+
+      draggingElement = null;
+      pointerMode = null;
+      resizeData = null;
+
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+    }
+
+    function placeNewFurniture(event) {
+      const stageRect = stage.getBoundingClientRect();
+
+      const isInsideStage =
+        event.clientX >= stageRect.left &&
+        event.clientX <= stageRect.right &&
+        event.clientY >= stageRect.top &&
+        event.clientY <= stageRect.bottom;
+
+      if (!isInsideStage) {
+        draggingElement.remove();
+        return;
+      }
+
+      furnitureLayer.appendChild(draggingElement);
+      draggingElement.classList.remove("dragging");
+
+      moveFurnitureInStage(event.clientX, event.clientY);
+      selectFurniture(draggingElement);
+      resetResult();
+    }
+
+    function moveElementOnPage(pageX, pageY) {
+      draggingElement.style.left = pageX - offsetX + "px";
+      draggingElement.style.top = pageY - offsetY + "px";
+    }
+
+    function moveFurnitureInStage(clientX, clientY) {
+      const stageRect = stage.getBoundingClientRect();
+
+      let x = clientX - stageRect.left - offsetX;
+      let y = clientY - stageRect.top - offsetY;
+
+      x = Math.max(0, Math.min(x, stage.clientWidth - draggingElement.offsetWidth));
+      y = Math.max(0, Math.min(y, stage.clientHeight - draggingElement.offsetHeight));
+
+      draggingElement.style.left = x + "px";
+      draggingElement.style.top = y + "px";
+
+      resetResult();
+    }
+
+    // ================================
+    // 家具サイズ変更
+    // ================================
+    function resizeFurniture(clientX, clientY) {
+      if (!resizeData || !draggingElement) return;
+
+      const direction = resizeData.direction;
+      const dx = clientX - resizeData.startX;
+      const dy = clientY - resizeData.startY;
+
+      let newLeft = resizeData.startLeft;
+      let newTop = resizeData.startTop;
+      let newWidth = resizeData.startWidth;
+      let newHeight = resizeData.startHeight;
+
+      if (direction.includes("e")) {
+        newWidth = resizeData.startWidth + dx;
+      }
+
+      if (direction.includes("s")) {
+        newHeight = resizeData.startHeight + dy;
+      }
+
+      if (direction.includes("w")) {
+        newWidth = resizeData.startWidth - dx;
+        newLeft = resizeData.startLeft + dx;
+      }
+
+      if (direction.includes("n")) {
+        newHeight = resizeData.startHeight - dy;
+        newTop = resizeData.startTop + dy;
+      }
+
+      if (newWidth < minFurnitureSize) {
+        if (direction.includes("w")) {
+          newLeft = resizeData.startLeft + resizeData.startWidth - minFurnitureSize;
+        }
+
+        newWidth = minFurnitureSize;
+      }
+
+      if (newHeight < minFurnitureSize) {
+        if (direction.includes("n")) {
+          newTop = resizeData.startTop + resizeData.startHeight - minFurnitureSize;
+        }
+
+        newHeight = minFurnitureSize;
+      }
+
+      if (newLeft < 0) {
+        newWidth += newLeft;
+        newLeft = 0;
+      }
+
+      if (newTop < 0) {
+        newHeight += newTop;
+        newTop = 0;
+      }
+
+      if (newLeft + newWidth > stage.clientWidth) {
+        newWidth = stage.clientWidth - newLeft;
+      }
+
+      if (newTop + newHeight > stage.clientHeight) {
+        newHeight = stage.clientHeight - newTop;
+      }
+
+      newWidth = Math.max(minFurnitureSize, newWidth);
+      newHeight = Math.max(minFurnitureSize, newHeight);
+
+      draggingElement.style.left = newLeft + "px";
+      draggingElement.style.top = newTop + "px";
+      draggingElement.style.width = newWidth + "px";
+      draggingElement.style.height = newHeight + "px";
+
+      resetResult();
+    }
+
+    // ================================
+    // 自分で家具を追加
+    // ================================
+    openAddFormButton.addEventListener("click", () => {
+      addForm.classList.add("show");
+      customFurnitureName.focus();
+    });
+
+    closeAddFormButton.addEventListener("click", () => {
+      addForm.classList.remove("show");
+      customFurnitureName.value = "";
+    });
+
+    addFurnitureButton.addEventListener("click", () => {
+      addCustomFurniture();
+    });
+
+    customFurnitureName.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        addCustomFurniture();
+      }
+    });
+
+    function addCustomFurniture() {
+      const name = customFurnitureName.value.trim();
+
+      if (name === "") {
+        alert("家具名を入力してください。");
+        return;
+      }
+
+      const item = document.createElement("div");
+
+      item.className = "furniture-item";
+      item.dataset.name = name;
+      item.dataset.width = "90";
+      item.dataset.height = "70";
+      item.textContent = name;
+
+      furnitureList.appendChild(item);
+
+      customFurnitureName.value = "";
+      addForm.classList.remove("show");
+    }
+
+    // ================================
+    // 選択した家具だけ削除
+    // ================================
+    deleteButton.addEventListener("click", () => {
+      if (!selectedFurniture) return;
+
+      selectedFurniture.remove();
+      clearSelection();
+      resetResult();
+    });
+
+    // ================================
+    // リセット
+    // ================================
+    resetButton.addEventListener("click", () => {
+      furnitureLayer.innerHTML = "";
+
+      clearSelection();
+      setInitialRoom();
+      renderRoom();
+      setMode("furniture");
+      resetResult();
+    });
+
+    // ================================
+    // 判定
+    // 結果は危険度だけ表示
+    // ================================
+    judgeButton.addEventListener("click", () => {
+      const furnitureItems = Array.from(document.querySelectorAll(".placed-furniture"));
+
+      if (furnitureItems.length === 0) {
+        showRisk("低");
+        return;
+      }
+
+      let dangerPoint = 0;
+
+      const doorZone = getDoorDangerZone();
+
+      furnitureItems.forEach(furniture => {
+        const rect = getStageRect(furniture);
+
+        // 家具が部屋の形からはみ出していると危険
+        if (!isFurnitureInsideRoom(rect)) {
+          dangerPoint += 2;
+        }
+
+        // 出口付近に家具があると危険
+        if (doorZone && isOverlap(rect, doorZone)) {
+          dangerPoint += 2;
+        }
+
+        // 大きい家具は危険度を少し上げる
+        if (furniture.offsetWidth >= 130 || furniture.offsetHeight >= 130) {
+          dangerPoint += 1;
+        }
+      });
+
+      // 家具同士が重なっていると危険
+      for (let i = 0; i < furnitureItems.length; i++) {
+        for (let j = i + 1; j < furnitureItems.length; j++) {
+          const rectA = getStageRect(furnitureItems[i]);
+          const rectB = getStageRect(furnitureItems[j]);
+
+          if (isOverlap(rectA, rectB)) {
+            dangerPoint += 1;
+          }
+        }
+      }
+
+      // 家具が多いと通路が狭くなりやすい
+      if (furnitureItems.length >= 6) {
+        dangerPoint += 2;
+      } else if (furnitureItems.length >= 4) {
+        dangerPoint += 1;
+      }
+
+      if (dangerPoint >= 5) {
+        showRisk("高");
+      } else if (dangerPoint >= 2) {
+        showRisk("中");
+      } else {
+        showRisk("低");
+      }
+    });
+
+    function showRisk(level) {
+      resultBox.classList.remove("risk-none", "risk-low", "risk-middle", "risk-high");
+
+      if (level === "高") {
+        resultBox.textContent = "判定結果：危険度 高";
+        resultBox.classList.add("risk-high");
+      }
+
+      if (level === "中") {
+        resultBox.textContent = "判定結果：危険度 中";
+        resultBox.classList.add("risk-middle");
+      }
+
+      if (level === "低") {
+        resultBox.textContent = "判定結果：危険度 低";
+        resultBox.classList.add("risk-low");
+      }
+    }
+
+    function resetResult() {
+      resultBox.textContent = "判定結果：未判定";
+      resultBox.classList.remove("risk-low", "risk-middle", "risk-high");
+      resultBox.classList.add("risk-none");
+    }
+
+    // ================================
+    // 判定用の計算
+    // ================================
+    function getStageRect(element) {
+      return {
+        left: element.offsetLeft,
+        top: element.offsetTop,
+        right: element.offsetLeft + element.offsetWidth,
+        bottom: element.offsetTop + element.offsetHeight,
+        width: element.offsetWidth,
+        height: element.offsetHeight
+      };
+    }
+
+    function isFurnitureInsideRoom(rect) {
+      if (rect.left < 0 || rect.top < 0 || rect.right > stage.clientWidth || rect.bottom > stage.clientHeight) {
+        return false;
+      }
+
+      const startCol = Math.floor(rect.left / CELL);
+      const endCol = Math.floor((rect.right - 1) / CELL);
+      const startRow = Math.floor(rect.top / CELL);
+      const endRow = Math.floor((rect.bottom - 1) / CELL);
+
+      for (let row = startRow; row <= endRow; row++) {
+        for (let col = startCol; col <= endCol; col++) {
+          if (!hasCell(row, col)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
+    function getDoorDangerZone() {
+      const row = doorState.row;
+      const col = doorState.col;
+      const side = doorState.side;
+
+      if (!hasCell(row, col)) return null;
+
+      if (side === "top") {
+        return {
+          left: col * CELL,
+          top: row * CELL,
+          right: (col + 1) * CELL,
+          bottom: row * CELL + 70
+        };
+      }
+
+      if (side === "bottom") {
+        return {
+          left: col * CELL,
+          top: (row + 1) * CELL - 70,
+          right: (col + 1) * CELL,
+          bottom: (row + 1) * CELL
+        };
+      }
+
+      if (side === "left") {
+        return {
+          left: col * CELL,
+          top: row * CELL,
+          right: col * CELL + 70,
+          bottom: (row + 1) * CELL
+        };
+      }
+
+      if (side === "right") {
+        return {
+          left: (col + 1) * CELL - 70,
+          top: row * CELL,
+          right: (col + 1) * CELL,
+          bottom: (row + 1) * CELL
+        };
+      }
+
+      return null;
+    }
+
+    function isOverlap(rectA, rectB) {
+      return !(
+        rectA.right <= rectB.left ||
+        rectA.left >= rectB.right ||
+        rectA.bottom <= rectB.top ||
+        rectA.top >= rectB.bottom
+      );
+    }
+
+    function distanceToSegment(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+
+      if (dx === 0 && dy === 0) {
+        return Math.hypot(px - x1, py - y1);
+      }
+
+      let t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
+
+      t = Math.max(0, Math.min(1, t));
+
+      const closestX = x1 + t * dx;
+      const closestY = y1 + t * dy;
+
+      return Math.hypot(px - closestX, py - closestY);
+    }
+
+    function getStagePosition(clientX, clientY) {
+      const rect = stage.getBoundingClientRect();
+
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      if (x < 0 || y < 0 || x > stage.clientWidth || y > stage.clientHeight) {
+        return null;
+      }
+
+      return { x, y };
+    }
+
+    // ================================
+    // 初期化
+    // ================================
+    setInitialRoom();
+    renderRoom();
+    setMode("furniture");
+    resetResult();
+  </script>
+
+</body>
+</html>
+```
