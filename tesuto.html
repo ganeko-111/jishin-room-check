@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>地震のときに危ない部屋の配置チェック</title>
+  <title>へやカルテ | 地震時の家具配置チェック</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -19,9 +19,22 @@
       scroll-behavior: smooth;
     }
 
+    :root {
+      --brand-main: #2563EB;
+      --brand-main-dark: #1D4ED8;
+      --brand-main-soft: #DBEAFE;
+      --brand-sub: #10B981;
+      --brand-sub-dark: #059669;
+      --brand-bg: #F8FAFC;
+      --brand-text: #1F2937;
+      --brand-muted: #64748B;
+      --brand-warning: #F59E0B;
+      --brand-danger: #EF4444;
+    }
+
     body {
-      background-color: #f5f6f8;
-      color: #212529;
+      background-color: var(--brand-bg);
+      color: var(--brand-text);
     }
 
     #howto {
@@ -31,9 +44,72 @@
     /* 全体のカード共通 */
     .ui-card {
       background-color: #ffffff;
-      border: 1px solid #dddddd;
+      border: 1px solid #dbeafe;
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.06);
+    }
+
+    .brand-navbar {
+      background-color: #ffffff;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 10px 28px rgba(37, 99, 235, 0.08);
+    }
+
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      margin-right: 16px;
+      color: var(--brand-text);
+      text-decoration: none;
+    }
+
+    .brand-lockup:hover,
+    .brand-lockup:focus {
+      color: var(--brand-text);
+    }
+
+    .brand-logo {
+      width: 176px;
+      height: 56px;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 10px;
+      flex-shrink: 0;
+      background-color: #ffffff;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--brand-main);
+    }
+
+    .brand-subtitle {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--brand-muted);
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .brand-nav-link {
+      color: var(--brand-main);
+      font-weight: 700;
+    }
+
+    .brand-nav-link:hover,
+    .brand-nav-link:focus {
+      color: var(--brand-main-dark);
     }
 
     /* 左側の家具エリア */
@@ -56,11 +132,12 @@
       font-size: 1.05rem;
       font-weight: 700;
       margin: 0;
+      color: var(--brand-text);
     }
 
     .panel-subtitle {
       font-size: 0.9rem;
-      color: #6b7280;
+      color: var(--brand-muted);
       margin: 4px 0 0;
     }
 
@@ -75,12 +152,88 @@
       flex-shrink: 0;
     }
 
+    .btn-primary {
+      --bs-btn-bg: var(--brand-main);
+      --bs-btn-border-color: var(--brand-main);
+      --bs-btn-hover-bg: var(--brand-main-dark);
+      --bs-btn-hover-border-color: var(--brand-main-dark);
+      --bs-btn-active-bg: var(--brand-main-dark);
+      --bs-btn-active-border-color: var(--brand-main-dark);
+      --bs-btn-disabled-bg: var(--brand-main);
+      --bs-btn-disabled-border-color: var(--brand-main);
+    }
+
+    .btn-outline-primary {
+      --bs-btn-color: var(--brand-main);
+      --bs-btn-border-color: var(--brand-main);
+      --bs-btn-hover-bg: var(--brand-main);
+      --bs-btn-hover-border-color: var(--brand-main);
+      --bs-btn-active-bg: var(--brand-main);
+      --bs-btn-active-border-color: var(--brand-main);
+      --bs-btn-disabled-color: var(--brand-main);
+      --bs-btn-disabled-border-color: var(--brand-main);
+    }
+
+    .btn-success {
+      --bs-btn-bg: var(--brand-sub);
+      --bs-btn-border-color: var(--brand-sub);
+      --bs-btn-hover-bg: var(--brand-sub-dark);
+      --bs-btn-hover-border-color: var(--brand-sub-dark);
+      --bs-btn-active-bg: var(--brand-sub-dark);
+      --bs-btn-active-border-color: var(--brand-sub-dark);
+      --bs-btn-disabled-bg: var(--brand-sub);
+      --bs-btn-disabled-border-color: var(--brand-sub);
+    }
+
+    .btn-outline-success {
+      --bs-btn-color: var(--brand-sub);
+      --bs-btn-border-color: var(--brand-sub);
+      --bs-btn-hover-bg: var(--brand-sub);
+      --bs-btn-hover-border-color: var(--brand-sub);
+      --bs-btn-active-bg: var(--brand-sub);
+      --bs-btn-active-border-color: var(--brand-sub);
+      --bs-btn-disabled-color: var(--brand-sub);
+      --bs-btn-disabled-border-color: var(--brand-sub);
+    }
+
+    .btn-danger {
+      --bs-btn-bg: var(--brand-danger);
+      --bs-btn-border-color: var(--brand-danger);
+      --bs-btn-hover-bg: #dc2626;
+      --bs-btn-hover-border-color: #dc2626;
+      --bs-btn-active-bg: #dc2626;
+      --bs-btn-active-border-color: #dc2626;
+    }
+
+    .btn-outline-danger {
+      --bs-btn-color: var(--brand-danger);
+      --bs-btn-border-color: var(--brand-danger);
+      --bs-btn-hover-bg: var(--brand-danger);
+      --bs-btn-hover-border-color: var(--brand-danger);
+      --bs-btn-active-bg: var(--brand-danger);
+      --bs-btn-active-border-color: var(--brand-danger);
+    }
+
+    .btn-secondary {
+      --bs-btn-bg: var(--brand-text);
+      --bs-btn-border-color: var(--brand-text);
+      --bs-btn-hover-bg: #111827;
+      --bs-btn-hover-border-color: #111827;
+      --bs-btn-active-bg: #111827;
+      --bs-btn-active-border-color: #111827;
+    }
+
+    .form-check-input:checked {
+      background-color: var(--brand-main);
+      border-color: var(--brand-main);
+    }
+
     .add-form {
       display: none;
-      border: 1px solid #dddddd;
+      border: 1px solid #dbeafe;
       border-radius: 12px;
       padding: 12px;
-      background-color: #fafafa;
+      background-color: #f8fbff;
       margin-bottom: 12px;
     }
 
@@ -95,7 +248,7 @@
     }
 
     .furniture-item {
-      border: 1px solid #cccccc;
+      border: 1px solid #bfdbfe;
       border-radius: 12px;
       padding: 12px;
       margin-bottom: 10px;
@@ -109,8 +262,8 @@
     }
 
     .furniture-item:hover {
-      border-color: #0d6efd;
-      background-color: #f7fbff;
+      border-color: var(--brand-main);
+      background-color: #eff6ff;
       transform: translateY(-1px);
     }
 
@@ -123,7 +276,7 @@
       margin-top: 4px;
       font-size: 0.78rem;
       font-weight: normal;
-      color: #666666;
+      color: var(--brand-muted);
     }
 
     /* 中央のメインエリア */
@@ -143,8 +296,8 @@
       display: inline-block;
       padding: 6px 10px;
       border-radius: 999px;
-      background-color: #e7f1ff;
-      color: #0d6efd;
+      background-color: var(--brand-main-soft);
+      color: var(--brand-main);
       font-size: 0.8rem;
       font-weight: 700;
       white-space: nowrap;
@@ -153,8 +306,8 @@
     .stage-wrap {
       position: relative;
       overflow: auto;
-      background-color: #f8f9fa;
-      border: 1px solid #e2e2e2;
+      background-color: #f8fbff;
+      border: 1px solid #dbeafe;
       border-radius: 14px;
       padding: 12px;
     }
@@ -165,7 +318,7 @@
       height: 400px;
       margin: 0 auto;
       background-color: #ffffff;
-      border: 2px solid #b7bcc3;
+      border: 2px solid #93c5fd;
       border-radius: 14px;
       overflow: hidden;
       touch-action: none;
@@ -192,8 +345,8 @@
       position: absolute;
       width: 40px;
       height: 40px;
-      border: 1px solid #e6e6e6;
-      background-color: #f7f7f7;
+      border: 1px solid #e2e8f0;
+      background-color: #f8fafc;
     }
 
     .grid-cell.active {
@@ -201,17 +354,17 @@
     }
 
     .stage.layout-mode .grid-cell {
-      border: 1px dashed #cfcfcf;
+      border: 1px dashed #93c5fd;
     }
 
     .stage.layout-mode .grid-cell.active {
-      background-color: #fffdf2;
+      background-color: #eff6ff;
     }
 
     /* 外周の壁 */
     .wall {
       position: absolute;
-      background-color: #333333;
+      background-color: var(--brand-text);
       z-index: 4;
       pointer-events: none;
     }
@@ -231,9 +384,9 @@
       height: 70px;
       min-width: 40px;
       min-height: 40px;
-      border: 2px solid #333333;
+      border: 2px solid #1e40af;
       border-radius: 10px;
-      background-color: #e9ecef;
+      background-color: #eff6ff;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -260,9 +413,9 @@
     }
 
     .placed-furniture.selected {
-      outline: 3px solid #0d6efd;
+      outline: 3px solid var(--brand-main);
       outline-offset: 2px;
-      background-color: #dbeafe;
+      background-color: var(--brand-main-soft);
     }
 
     /* 家具を選択したときだけ見えるサイズ変更の点 */
@@ -271,7 +424,7 @@
       position: absolute;
       width: 12px;
       height: 12px;
-      background-color: #0d6efd;
+      background-color: var(--brand-main);
       border: 2px solid #ffffff;
       border-radius: 50%;
       z-index: 30;
@@ -349,7 +502,7 @@
       height: 22px;
       border: none;
       border-radius: 50%;
-      background-color: #0d6efd;
+      background-color: var(--brand-main);
       color: #ffffff;
       font-weight: bold;
       font-size: 0.95rem;
@@ -371,9 +524,9 @@
       position: absolute;
       width: 220px;
       background-color: #ffffff;
-      border: 1px solid #cccccc;
+      border: 1px solid #bfdbfe;
       border-radius: 12px;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.14);
       padding: 12px;
       z-index: 80;
     }
@@ -440,7 +593,7 @@
 
     .door-svg path {
       fill: none;
-      stroke: #198754;
+      stroke: var(--brand-sub);
       stroke-width: 3;
       stroke-linecap: round;
     }
@@ -450,7 +603,7 @@
       z-index: 28;
       font-size: 0.7rem;
       font-weight: bold;
-      color: #198754;
+      color: var(--brand-sub);
       background-color: rgba(255, 255, 255, 0.9);
       padding: 1px 4px;
       border-radius: 6px;
@@ -489,38 +642,38 @@
       padding: 14px 18px;
       border-radius: 14px;
       text-align: center;
-      background-color: #eeeeee;
+      background-color: #f1f5f9;
       white-space: nowrap;
     }
 
     .risk-none {
-      color: #333333;
-      border: 2px solid #cccccc;
-      background-color: #eeeeee;
+      color: var(--brand-text);
+      border: 2px solid #cbd5e1;
+      background-color: #f1f5f9;
     }
 
     .risk-low {
-      color: #0f5132;
-      border: 2px solid #198754;
-      background-color: #d1e7dd;
+      color: #065f46;
+      border: 2px solid var(--brand-sub);
+      background-color: #d1fae5;
     }
 
     .risk-middle {
-      color: #664d03;
-      border: 2px solid #ffc107;
-      background-color: #fff3cd;
+      color: #92400e;
+      border: 2px solid var(--brand-warning);
+      background-color: #fef3c7;
     }
 
     .risk-high {
-      color: #842029;
-      border: 2px solid #dc3545;
-      background-color: #f8d7da;
+      color: #991b1b;
+      border: 2px solid var(--brand-danger);
+      background-color: #fee2e2;
     }
 
     .result-help {
       margin-top: 10px;
       font-size: 0.9rem;
-      color: #666666;
+      color: var(--brand-muted);
       line-height: 1.5;
     }
 
@@ -531,7 +684,7 @@
 
     .mode-note {
       font-size: 0.92rem;
-      color: #555555;
+      color: var(--brand-muted);
       margin-bottom: 0;
     }
 
@@ -546,6 +699,35 @@
     }
 
     @media (max-width: 767px) {
+      .brand-navbar .container-fluid {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .brand-lockup {
+        gap: 8px;
+        margin-right: 0;
+      }
+
+      .brand-logo {
+        width: 132px;
+        height: 44px;
+      }
+
+      .brand-name {
+        font-size: 1.08rem;
+      }
+
+      .brand-subtitle {
+        font-size: 0.78rem;
+        white-space: normal;
+      }
+
+      .brand-navbar .navbar-nav {
+        width: 100%;
+        margin-left: 0 !important;
+      }
+
       .side-panel {
         min-height: 280px;
       }
@@ -567,15 +749,19 @@
   <div class="container-fluid p-3 p-md-4">
 
     <!-- ナビゲーションバー -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded-4 mb-3 px-3 shadow-sm">
+    <nav class="navbar navbar-expand-lg brand-navbar rounded-4 mb-3 px-3 shadow-sm">
       <div class="container-fluid p-0">
 
-        <a class="navbar-brand fw-bold" href="#">
-          地震のときに危ない部屋の配置チェック
+        <a class="navbar-brand brand-lockup" href="#">
+          <img class="brand-logo" src="heya-karute-logo.png" alt="へやカルテ ロゴ">
+          <span class="brand-copy">
+            <span class="brand-name">へやカルテ</span>
+            <span class="brand-subtitle">地震時の家具配置チェック</span>
+          </span>
         </a>
 
-        <div class="navbar-nav">
-          <a class="nav-link" href="#howto">
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link brand-nav-link" href="#howto">
             使い方
           </a>
         </div>
@@ -648,19 +834,19 @@
           </div>
 
           <div id="furnitureList" class="furniture-scroll">
-            <div class="furniture-item" data-name="本棚" data-width="70" data-height="150" data-height-level="高" data-fixed="false">
+            <div class="furniture-item" data-name="本棚" data-width="40" data-height="80" data-height-level="高" data-fixed="false">
               本棚
               <span class="furniture-meta">高さ：高 / 固定：なし</span>
             </div>
-            <div class="furniture-item" data-name="タンス" data-width="90" data-height="130" data-height-level="中" data-fixed="false">
+            <div class="furniture-item" data-name="タンス" data-width="40" data-height="80" data-height-level="中" data-fixed="false">
               タンス
               <span class="furniture-meta">高さ：中 / 固定：なし</span>
             </div>
-            <div class="furniture-item" data-name="ベッド" data-width="150" data-height="100" data-height-level="低" data-fixed="false">
+            <div class="furniture-item" data-name="ベッド" data-width="80" data-height="160" data-height-level="低" data-fixed="false">
               ベッド
               <span class="furniture-meta">高さ：低 / 固定：なし</span>
             </div>
-            <div class="furniture-item" data-name="机" data-width="110" data-height="70" data-height-level="低" data-fixed="false">
+            <div class="furniture-item" data-name="机" data-width="80" data-height="40" data-height-level="低" data-fixed="false">
               机
               <span class="furniture-meta">高さ：低 / 固定：なし</span>
             </div>
@@ -679,7 +865,7 @@
               <div class="main-header">
                 <div>
                   <h2 class="panel-title">配置エリア</h2>
-                  <p class="panel-subtitle">中央で家具の位置と出口まわりを確認します</p>
+                  <p class="panel-subtitle">中央で家具の位置と出口まわりを確認します（1マス = 50cm）</p>
                 </div>
 
                 <div class="main-badge">
@@ -828,6 +1014,7 @@
   const COLS = 16;
   const ROWS = 10;
   const CELL = 40;
+  const CELL_CM = 50;
 
   const stage = document.getElementById("stage");
   const cellLayer = document.getElementById("cellLayer");
@@ -1007,7 +1194,7 @@
       paintEraseButton.disabled = false;
       deleteButton.disabled = true;
 
-      modeNote.textContent = "間取り編集モード：マスをクリック、またはクリックしたままなぞると部屋をまとめて追加・削除できます。";
+      modeNote.textContent = "間取り編集モード：マスをクリック、またはクリックしたままなぞると部屋をまとめて追加・削除できます。1マス = " + CELL_CM + "cmです。";
     }
 
     if (mode === "furniture") {
@@ -1023,7 +1210,7 @@
       paintAddButton.disabled = true;
       paintEraseButton.disabled = true;
 
-      modeNote.textContent = "家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。";
+      modeNote.textContent = "家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。1マス = " + CELL_CM + "cmです。";
     }
   }
 
@@ -1649,8 +1836,8 @@
 
     item.className = "furniture-item";
     item.dataset.name = name;
-    item.dataset.width = "90";
-    item.dataset.height = "70";
+    item.dataset.width = String(CELL * 2);
+    item.dataset.height = String(CELL);
     item.dataset.heightLevel = heightLevel;
     item.dataset.fixed = fixed ? "true" : "false";
 
@@ -1724,32 +1911,71 @@
     const overlapCount = countOverlappingFurniture(furnitureItems);
 
     const bodyBlockedCells = buildFurnitureBodyCellSet(furnitureItems);
-    const dangerCells = buildDangerCellSet(furnitureItems);
-    const blockedWithDanger = mergeCellSets(bodyBlockedCells, dangerCells);
+    const dangerProfiles = buildDangerProfiles(furnitureItems);
 
     const walkableCells = getRoomWalkableCells(bodyBlockedCells);
-    const reachableCells = getReachableCellsFromDoor(blockedWithDanger);
+    const reachableCells = getReachableCellsFromDoor(bodyBlockedCells);
 
     const safeRatio =
       walkableCells.size === 0 ? 0 : reachableCells.size / walkableCells.size;
 
-    const bedUnsafeRatio = getBedUnsafeRatio(furnitureItems, dangerCells);
-    const doorRisk = hasDoorZoneRisk(furnitureItems, getDoorDangerZone());
+    const doorBlocked = hasCellIntersection(
+      bodyBlockedCells,
+      getDoorApproachCells(2, 0)
+    );
+    const doorDangerCells = getDoorApproachCells(2, 1);
+    const bedNearbyCells = getBedNearbyCellSet(furnitureItems);
+    const passageCells = getPassageCellSet(bodyBlockedCells, reachableCells);
+
+    const strongDoorDanger = hasLargeDangerOverlap(
+      dangerProfiles,
+      doorDangerCells,
+      2,
+      profile => profile.score >= 3
+    );
+    const strongBedDanger = hasLargeDangerOverlap(
+      dangerProfiles,
+      bedNearbyCells,
+      3,
+      profile => profile.score >= 3
+    );
+    const moderateDoorDanger = hasDangerOverlap(
+      dangerProfiles,
+      doorDangerCells,
+      profile => profile.score >= 1
+    );
+    const moderateBedDanger = hasDangerOverlap(
+      dangerProfiles,
+      bedNearbyCells,
+      profile => profile.score >= 1
+    );
+    const passageDanger = hasDangerOverlap(
+      dangerProfiles,
+      passageCells,
+      profile => profile.score >= 2
+    );
+    const hasUnfixedTallFurniture = furnitureItems.some(item => {
+      return item.dataset.heightLevel === "高" && item.dataset.fixed !== "true";
+    });
 
     if (
       outsideCount > 0 ||
       overlapCount > 0 ||
-      doorRisk ||
-      safeRatio < 0.55 ||
-      bedUnsafeRatio >= 0.35
+      doorBlocked ||
+      safeRatio < 0.35 ||
+      strongDoorDanger ||
+      strongBedDanger
     ) {
       showRisk("高");
       return;
     }
 
     if (
-      safeRatio < 0.85 ||
-      bedUnsafeRatio > 0
+      safeRatio < 0.8 ||
+      hasUnfixedTallFurniture ||
+      moderateDoorDanger ||
+      moderateBedDanger ||
+      passageDanger
     ) {
       showRisk("中");
       return;
@@ -1873,7 +2099,6 @@
   function getTippingScore(furniture) {
     const width = furniture.offsetWidth;
     const height = furniture.offsetHeight;
-    const area = width * height;
     const longerSide = Math.max(width, height);
     const shorterSide = Math.max(1, Math.min(width, height));
     const aspectRatio = longerSide / shorterSide;
@@ -1881,18 +2106,21 @@
     const heightLevel = furniture.dataset.heightLevel || "中";
     const fixed = furniture.dataset.fixed === "true";
 
+    if (heightLevel === "低") {
+      return 0;
+    }
+
     let score = 0;
 
-    if (heightLevel === "中") score += 1;
-    if (heightLevel === "高") score += 2;
+    if (heightLevel === "中") {
+      score = fixed ? 0 : 1;
+    }
 
-    if (area <= 8000) score += 1;
-    else if (area >= 18000) score -= 1;
+    if (heightLevel === "高") {
+      score = fixed ? 1 : 3;
+    }
 
-    if (aspectRatio >= 2.0) score += 2;
-    else if (aspectRatio >= 1.4) score += 1;
-
-    if (fixed) score -= 2;
+    if (!fixed && aspectRatio >= 2.5) score += 1;
 
     return Math.max(0, score);
   }
@@ -1932,14 +2160,13 @@
     return name.includes("ベッド") || name.toLowerCase().includes("bed");
   }
 
-  function getFurnitureDangerRect(furniture) {
-    const score = getTippingScore(furniture);
+  function getFurnitureDangerRect(furniture, score = getTippingScore(furniture)) {
     if (score <= 0) return null;
 
     const rect = getStageRect(furniture);
 
-    let margin = 20;
-    if (score >= 2) margin = 40;
+    let margin = CELL / 2;
+    if (score >= 2) margin = CELL;
     if (score >= 4) margin = 60;
 
     return {
@@ -1975,16 +2202,35 @@
     return blocked;
   }
 
-  function buildDangerCellSet(items) {
-    const danger = new Set();
+  function buildDangerProfiles(items) {
+    const profiles = [];
 
     items.forEach(item => {
       if (isBedFurniture(item)) return;
 
-      const dangerRect = getFurnitureDangerRect(item);
+      const score = getTippingScore(item);
+      const dangerRect = getFurnitureDangerRect(item, score);
       if (!dangerRect) return;
 
-      addRectCellsToSet(dangerRect, danger);
+      const cells = new Set();
+      addRectCellsToSet(dangerRect, cells);
+
+      profiles.push({
+        item,
+        score,
+        dangerRect,
+        cells
+      });
+    });
+
+    return profiles;
+  }
+
+  function buildDangerCellSet(items) {
+    const danger = new Set();
+
+    buildDangerProfiles(items).forEach(profile => {
+      profile.cells.forEach(key => danger.add(key));
     });
 
     return danger;
@@ -1994,6 +2240,138 @@
     const merged = new Set(setA);
     setB.forEach(value => merged.add(value));
     return merged;
+  }
+
+  function parseCellKey(key) {
+    const parts = key.split(",");
+    return {
+      row: Number(parts[0]),
+      col: Number(parts[1])
+    };
+  }
+
+  function hasCellIntersection(setA, setB) {
+    for (const value of setA) {
+      if (setB.has(value)) return true;
+    }
+
+    return false;
+  }
+
+  function countCellIntersection(setA, setB) {
+    let count = 0;
+
+    setA.forEach(value => {
+      if (setB.has(value)) count += 1;
+    });
+
+    return count;
+  }
+
+  function getDoorApproachCells(depth = 1, sideRadius = 0) {
+    const cells = new Set();
+
+    for (let forward = 0; forward < depth; forward++) {
+      for (let sideOffset = -sideRadius; sideOffset <= sideRadius; sideOffset++) {
+        let row = doorState.row;
+        let col = doorState.col;
+
+        if (doorState.side === "top") {
+          row += forward;
+          col += sideOffset;
+        }
+
+        if (doorState.side === "bottom") {
+          row -= forward;
+          col += sideOffset;
+        }
+
+        if (doorState.side === "left") {
+          row += sideOffset;
+          col += forward;
+        }
+
+        if (doorState.side === "right") {
+          row += sideOffset;
+          col -= forward;
+        }
+
+        if (hasCell(row, col)) {
+          cells.add(cellKey(row, col));
+        }
+      }
+    }
+
+    return cells;
+  }
+
+  function getBedNearbyCellSet(items) {
+    const cells = new Set();
+
+    items.filter(isBedFurniture).forEach(bed => {
+      const rect = getStageRect(bed);
+
+      const bedZone = {
+        left: rect.left - CELL,
+        top: rect.top - CELL,
+        right: rect.right + CELL,
+        bottom: rect.bottom + CELL
+      };
+
+      addRectCellsToSet(bedZone, cells);
+    });
+
+    return cells;
+  }
+
+  function getPassageCellSet(bodyBlockedCells, reachableCells) {
+    const passage = new Set();
+
+    reachableCells.forEach(key => {
+      const { row, col } = parseCellKey(key);
+      const directions = [
+        [row - 1, col],
+        [row + 1, col],
+        [row, col - 1],
+        [row, col + 1]
+      ];
+
+      let openNeighborCount = 0;
+      let nearFurniture = false;
+
+      directions.forEach(([nextRow, nextCol]) => {
+        const nextKey = cellKey(nextRow, nextCol);
+
+        if (!hasCell(nextRow, nextCol)) return;
+
+        if (bodyBlockedCells.has(nextKey)) {
+          nearFurniture = true;
+          return;
+        }
+
+        openNeighborCount += 1;
+      });
+
+      if (nearFurniture && openNeighborCount <= 3) {
+        passage.add(key);
+      }
+    });
+
+    return passage;
+  }
+
+  function hasDangerOverlap(profiles, targetCells, predicate) {
+    return profiles.some(profile => {
+      if (!predicate(profile)) return false;
+      return hasCellIntersection(profile.cells, targetCells);
+    });
+  }
+
+  function hasLargeDangerOverlap(profiles, targetCells, minimumCells, predicate) {
+    return profiles.some(profile => {
+      if (!predicate(profile)) return false;
+      return countCellIntersection(profile.cells, targetCells) >= minimumCells;
+    });
   }
 
   function getRoomWalkableCells(bodyBlockedCells) {
