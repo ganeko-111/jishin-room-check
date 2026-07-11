@@ -325,6 +325,8 @@
     }
 
     .cell-layer,
+    .route-layer,
+    .danger-layer,
     .wall-layer,
     .furniture-layer {
       position: absolute;
@@ -332,13 +334,45 @@
     }
 
     .cell-layer,
+    .route-layer,
+    .danger-layer,
     .wall-layer {
       pointer-events: none;
+    }
+
+    .route-layer {
+      z-index: 2;
+    }
+
+    .danger-layer {
+      z-index: 3;
     }
 
     .furniture-layer {
       pointer-events: none;
       z-index: 10;
+    }
+
+    .visual-cell {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      pointer-events: none;
+    }
+
+    .route-cell {
+      background-color: rgba(37, 99, 235, 0.14);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    .danger-cell {
+      background-color: rgba(245, 158, 11, 0.22);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .danger-cell.strong {
+      background-color: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.35);
     }
 
     .grid-cell {
@@ -677,6 +711,31 @@
       line-height: 1.5;
     }
 
+    .reason-box {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #dbeafe;
+    }
+
+    .reason-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text);
+      margin-bottom: 6px;
+    }
+
+    .reason-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--brand-muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .reason-list li + li {
+      margin-top: 4px;
+    }
+
     /* 下の操作エリア */
     .control-area {
       padding: 16px;
@@ -877,6 +936,8 @@
                 <div id="stage" class="stage furniture-mode">
 
                   <div id="cellLayer" class="cell-layer"></div>
+                  <div id="routeLayer" class="route-layer"></div>
+                  <div id="dangerLayer" class="danger-layer"></div>
                   <div id="wallLayer" class="wall-layer"></div>
 
                   <div id="door" class="door-plan top">
@@ -945,6 +1006,13 @@
 
               <div class="result-help">
                 家具を動かしたり出口の位置を変えたあとに、下の「判定する」を押してください。
+              </div>
+
+              <div class="reason-box">
+                <div class="reason-title">判定理由</div>
+                <ul id="reasonList" class="reason-list">
+                  <li>判定すると理由が表示されます。</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -1018,6 +1086,8 @@
 
   const stage = document.getElementById("stage");
   const cellLayer = document.getElementById("cellLayer");
+  const routeLayer = document.getElementById("routeLayer");
+  const dangerLayer = document.getElementById("dangerLayer");
   const wallLayer = document.getElementById("wallLayer");
   const furnitureLayer = document.getElementById("furnitureLayer");
 
@@ -1048,6 +1118,7 @@
   const deleteButton = document.getElementById("deleteButton");
   const resetButton = document.getElementById("resetButton");
   const resultBox = document.getElementById("resultBox");
+  const reasonList = document.getElementById("reasonList");
   const modeNote = document.getElementById("modeNote");
 
   let currentMode = "furniture";
@@ -1717,11 +1788,15 @@
     let x = clientX - stageRect.left - offsetX;
     let y = clientY - stageRect.top - offsetY;
 
-    x = Math.max(0, Math.min(x, stage.clientWidth - draggingElement.offsetWidth));
-    y = Math.max(0, Math.min(y, stage.clientHeight - draggingElement.offsetHeight));
+    const bounds = snapFurnitureBounds(
+      x,
+      y,
+      draggingElement.offsetWidth,
+      draggingElement.offsetHeight
+    );
 
-    draggingElement.style.left = x + "px";
-    draggingElement.style.top = y + "px";
+    draggingElement.style.left = bounds.left + "px";
+    draggingElement.style.top = bounds.top + "px";
 
     resetResult();
   }
@@ -1788,15 +1863,39 @@
       newHeight = stage.clientHeight - newTop;
     }
 
-    newWidth = Math.max(minFurnitureSize, newWidth);
-    newHeight = Math.max(minFurnitureSize, newHeight);
+    const bounds = snapFurnitureBounds(newLeft, newTop, newWidth, newHeight);
 
-    draggingElement.style.left = newLeft + "px";
-    draggingElement.style.top = newTop + "px";
-    draggingElement.style.width = newWidth + "px";
-    draggingElement.style.height = newHeight + "px";
+    draggingElement.style.left = bounds.left + "px";
+    draggingElement.style.top = bounds.top + "px";
+    draggingElement.style.width = bounds.width + "px";
+    draggingElement.style.height = bounds.height + "px";
 
     resetResult();
+  }
+
+  function snapToGrid(value) {
+    return Math.round(value / CELL) * CELL;
+  }
+
+  function snapFurnitureBounds(left, top, width, height) {
+    let snappedWidth = Math.max(minFurnitureSize, snapToGrid(width));
+    let snappedHeight = Math.max(minFurnitureSize, snapToGrid(height));
+
+    snappedWidth = Math.min(snappedWidth, stage.clientWidth);
+    snappedHeight = Math.min(snappedHeight, stage.clientHeight);
+
+    let snappedLeft = snapToGrid(left);
+    let snappedTop = snapToGrid(top);
+
+    snappedLeft = Math.max(0, Math.min(snappedLeft, stage.clientWidth - snappedWidth));
+    snappedTop = Math.max(0, Math.min(snappedTop, stage.clientHeight - snappedHeight));
+
+    return {
+      left: snappedLeft,
+      top: snappedTop,
+      width: snappedWidth,
+      height: snappedHeight
+    };
   }
 
   openAddFormButton.addEventListener("click", () => {
@@ -1901,9 +2000,10 @@
 
   judgeButton.addEventListener("click", () => {
     const furnitureItems = Array.from(document.querySelectorAll(".placed-furniture"));
+    clearVisualLayers();
 
     if (furnitureItems.length === 0) {
-      showRisk("低");
+      showRisk("低", ["家具が置かれていないため、出口までの移動を妨げるものはありません。"]);
       return;
     }
 
@@ -1925,7 +2025,6 @@
     );
     const doorDangerCells = getDoorApproachCells(2, 1);
     const bedNearbyCells = getBedNearbyCellSet(furnitureItems);
-    const passageCells = getPassageCellSet(bodyBlockedCells, reachableCells);
 
     const strongDoorDanger = hasLargeDangerOverlap(
       dangerProfiles,
@@ -1949,14 +2048,39 @@
       bedNearbyCells,
       profile => profile.score >= 1
     );
-    const passageDanger = hasDangerOverlap(
-      dangerProfiles,
-      passageCells,
-      profile => profile.score >= 2
-    );
-    const hasUnfixedTallFurniture = furnitureItems.some(item => {
-      return item.dataset.heightLevel === "高" && item.dataset.fixed !== "true";
-    });
+    const reasons = [];
+
+    if (outsideCount > 0) {
+      reasons.push("家具が部屋の外にはみ出しています。");
+    }
+
+    if (overlapCount > 0) {
+      reasons.push("家具同士が重なっています。");
+    }
+
+    if (doorBlocked) {
+      reasons.push("家具本体が出口、または出口前のマスをふさいでいます。");
+    }
+
+    if (safeRatio < 0.35) {
+      reasons.push("家具を避けて出口まで移動できる範囲がかなり狭くなっています。");
+    } else if (safeRatio < 0.65) {
+      reasons.push("家具を避けて出口まで移動できる範囲が少し狭くなっています。");
+    }
+
+    if (strongDoorDanger) {
+      reasons.push("高い家具の危険ゾーンが出口まわりに大きく重なっています。");
+    } else if (moderateDoorDanger) {
+      reasons.push("家具の危険ゾーンが出口まわりに近づいています。");
+    }
+
+    if (strongBedDanger) {
+      reasons.push("高い家具の危険ゾーンがベッド周辺に大きく重なっています。");
+    } else if (moderateBedDanger) {
+      reasons.push("家具の危険ゾーンがベッド周辺に重なっています。");
+    }
+
+    renderAssessmentVisuals(dangerProfiles, reachableCells);
 
     if (
       outsideCount > 0 ||
@@ -1966,25 +2090,23 @@
       strongDoorDanger ||
       strongBedDanger
     ) {
-      showRisk("高");
+      showRisk("高", reasons);
       return;
     }
 
     if (
-      safeRatio < 0.8 ||
-      hasUnfixedTallFurniture ||
+      safeRatio < 0.65 ||
       moderateDoorDanger ||
-      moderateBedDanger ||
-      passageDanger
+      moderateBedDanger
     ) {
-      showRisk("中");
+      showRisk("中", reasons);
       return;
     }
 
-    showRisk("低");
+    showRisk("低", ["出口がふさがっておらず、家具を避けて移動できます。"]);
   });
 
-  function showRisk(level) {
+  function showRisk(level, reasons = []) {
     resultBox.classList.remove("risk-none", "risk-low", "risk-middle", "risk-high");
 
     if (level === "高") {
@@ -2001,12 +2123,62 @@
       resultBox.textContent = "判定結果：危険度 低";
       resultBox.classList.add("risk-low");
     }
+
+    renderReasons(reasons);
   }
 
   function resetResult() {
     resultBox.textContent = "判定結果：未判定";
     resultBox.classList.remove("risk-low", "risk-middle", "risk-high");
     resultBox.classList.add("risk-none");
+    renderReasons(["判定すると理由が表示されます。"]);
+    clearVisualLayers();
+  }
+
+  function renderReasons(reasons) {
+    reasonList.innerHTML = "";
+
+    reasons.forEach(reason => {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      reasonList.appendChild(item);
+    });
+  }
+
+  function clearVisualLayers() {
+    routeLayer.innerHTML = "";
+    dangerLayer.innerHTML = "";
+  }
+
+  function renderAssessmentVisuals(dangerProfiles, reachableCells) {
+    clearVisualLayers();
+    renderCellSet(reachableCells, routeLayer, "route-cell");
+
+    dangerProfiles.forEach(profile => {
+      const className = profile.score >= 3 ? "danger-cell strong" : "danger-cell";
+      renderCellSet(profile.cells, dangerLayer, className);
+    });
+  }
+
+  function renderCellSet(cellSet, layer, className) {
+    cellSet.forEach(key => {
+      const { row, col } = parseCellKey(key);
+      const cell = document.createElement("div");
+
+      cell.className = "visual-cell " + className;
+      cell.style.left = col * CELL + "px";
+      cell.style.top = row * CELL + "px";
+
+      layer.appendChild(cell);
+    });
+  }
+
+  function parseCellKey(key) {
+    const parts = key.split(",");
+    return {
+      row: Number(parts[0]),
+      col: Number(parts[1])
+    };
   }
 
   function getStageRect(element) {
@@ -2242,14 +2414,6 @@
     return merged;
   }
 
-  function parseCellKey(key) {
-    const parts = key.split(",");
-    return {
-      row: Number(parts[0]),
-      col: Number(parts[1])
-    };
-  }
-
   function hasCellIntersection(setA, setB) {
     for (const value of setA) {
       if (setB.has(value)) return true;
@@ -2322,42 +2486,6 @@
     });
 
     return cells;
-  }
-
-  function getPassageCellSet(bodyBlockedCells, reachableCells) {
-    const passage = new Set();
-
-    reachableCells.forEach(key => {
-      const { row, col } = parseCellKey(key);
-      const directions = [
-        [row - 1, col],
-        [row + 1, col],
-        [row, col - 1],
-        [row, col + 1]
-      ];
-
-      let openNeighborCount = 0;
-      let nearFurniture = false;
-
-      directions.forEach(([nextRow, nextCol]) => {
-        const nextKey = cellKey(nextRow, nextCol);
-
-        if (!hasCell(nextRow, nextCol)) return;
-
-        if (bodyBlockedCells.has(nextKey)) {
-          nearFurniture = true;
-          return;
-        }
-
-        openNeighborCount += 1;
-      });
-
-      if (nearFurniture && openNeighborCount <= 3) {
-        passage.add(key);
-      }
-    });
-
-    return passage;
   }
 
   function hasDangerOverlap(profiles, targetCells, predicate) {
