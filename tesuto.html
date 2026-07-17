@@ -496,6 +496,13 @@
       background-color: var(--brand-main-soft);
     }
 
+    .placed-furniture.delete-pending {
+      border-color: var(--brand-danger);
+      background-color: #fef2f2;
+      opacity: 0.78;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18);
+    }
+
     /* 家具を選択したときだけ見えるサイズ変更の点 */
     .resize-handle {
       display: none;
@@ -785,6 +792,21 @@
       padding: 16px;
     }
 
+    .control-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 2px;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .control-toolbar-section {
+      flex: 0 0 auto;
+    }
+
     .mode-note {
       font-size: 0.92rem;
       color: var(--brand-muted);
@@ -793,6 +815,9 @@
 
     .control-area .btn {
       font-weight: 600;
+      min-height: 42px;
+      padding-inline: 14px;
+      white-space: nowrap;
     }
 
     .control-area .form-check {
@@ -800,11 +825,16 @@
       align-items: center;
       min-height: 38px;
       gap: 6px;
+      white-space: nowrap;
     }
 
     .control-area .form-check-label {
       color: var(--brand-text);
       font-weight: 600;
+    }
+
+    .mobile-sheet {
+      display: none;
     }
 
     @media (max-width: 1199px) {
@@ -815,7 +845,7 @@
 
     @media (max-width: 767px) {
       body {
-        padding-bottom: 190px;
+        padding-bottom: 238px;
       }
 
       .container-fluid {
@@ -851,23 +881,17 @@
         margin-left: 0 !important;
       }
 
-      .side-panel {
-        min-height: auto;
+      #howto,
+      .furniture-column {
+        display: none;
       }
 
-      .furniture-scroll {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        padding: 2px 4px 8px 0;
-        flex: none;
+      .workspace-column {
+        width: 100%;
       }
 
-      .furniture-item {
-        min-width: 112px;
-        margin-bottom: 0;
-        padding: 10px;
-        font-size: 0.92rem;
+      .result-panel {
+        display: none;
       }
 
       .main-header {
@@ -905,43 +929,116 @@
       }
 
       .control-area {
+        display: none;
+      }
+
+      .mobile-sheet {
+        display: block;
         position: fixed;
         left: 8px;
         right: 8px;
         bottom: 8px;
-        z-index: 120;
-        max-height: 46vh;
+        height: 220px;
+        z-index: 140;
+        overflow: hidden;
+        padding: 8px 12px 12px;
+        background-color: rgba(255, 255, 255, 0.98);
+        border: 1px solid #dbeafe;
+        border-radius: 18px;
+        box-shadow: 0 18px 40px rgba(31, 41, 55, 0.22);
+        transition: height 0.22s ease;
+      }
+
+      .mobile-sheet.expanded {
+        height: min(72vh, 560px);
         overflow-y: auto;
-        border-radius: 14px;
-        box-shadow: 0 16px 34px rgba(31, 41, 55, 0.18);
       }
 
-      .control-area .row {
-        --bs-gutter-x: 0.5rem;
-        --bs-gutter-y: 0.5rem;
-      }
-
-      .control-area .col-auto {
-        flex: 1 1 calc(50% - 0.5rem);
-      }
-
-      .control-area .btn,
-      .control-area .btn-group,
-      .control-area .form-check {
-        width: 100%;
-      }
-
-      .control-area .btn {
-        min-height: 44px;
-        white-space: normal;
-      }
-
-      .control-area .form-check {
+      .mobile-sheet-handle {
+        display: flex;
+        align-items: center;
         justify-content: center;
-        min-height: 44px;
+        width: 100%;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+      }
+
+      .mobile-sheet-handle span {
+        width: 44px;
+        height: 5px;
+        border-radius: 999px;
+        background-color: #cbd5e1;
+      }
+
+      .mobile-sheet-status {
+        margin: 4px 0 8px;
+        color: var(--brand-text);
+        font-size: 0.92rem;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+
+      .mobile-furniture-chips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 0 10px;
+        scroll-snap-type: x proximity;
+      }
+
+      .mobile-furniture-chips .furniture-item {
+        min-width: 104px;
+        margin-bottom: 0;
+        padding: 9px 10px;
+        font-size: 0.9rem;
+        scroll-snap-align: start;
+      }
+
+      .mobile-sheet-actions,
+      .mobile-layout-tools {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .mobile-sheet-actions .btn,
+      .mobile-layout-tools .btn {
+        min-height: 42px;
+        white-space: normal;
+        font-weight: 700;
+      }
+
+      .mobile-layout-tools {
+        display: none;
+        margin-top: 8px;
+      }
+
+      .mobile-sheet.layout-mode .mobile-layout-tools {
+        display: grid;
+      }
+
+      .mobile-result-panel {
+        margin-top: 10px;
+        padding: 10px;
         border: 1px solid #dbeafe;
         border-radius: 8px;
-        background-color: #ffffff;
+        background-color: #f8fbff;
+      }
+
+      .mobile-result-text {
+        color: var(--brand-text);
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .mobile-reason-list {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--brand-muted);
+        font-size: 0.86rem;
+        line-height: 1.45;
       }
     }
   </style>
@@ -983,7 +1080,7 @@
     <div class="row g-3">
 
       <!-- 左側：家具を追加する場所 -->
-      <div class="col-lg-3">
+      <div class="col-lg-3 furniture-column">
         <div class="ui-card side-panel">
 
           <div class="furniture-header">
@@ -1059,7 +1156,7 @@
       </div>
 
       <!-- 右側：中央の間取り + 判定結果 -->
-      <div class="col-lg-9">
+      <div class="col-lg-9 workspace-column">
         <div class="row g-3">
 
           <!-- 配置エリア -->
@@ -1180,9 +1277,9 @@
 
         <!-- 下：操作エリア -->
         <div class="ui-card control-area mt-3">
-          <div class="row g-3 align-items-center">
+          <div class="control-toolbar" aria-label="操作ツールバー">
 
-            <div class="col-auto">
+            <div class="control-toolbar-section">
               <div class="btn-group" role="group" aria-label="モード切り替え">
                 <button id="layoutModeButton" class="btn btn-outline-primary" type="button">
                   間取り編集
@@ -1193,7 +1290,7 @@
               </div>
             </div>
 
-            <div class="col-auto">
+            <div class="control-toolbar-section">
               <div class="btn-group" role="group" aria-label="部屋の追加と削除">
                 <button id="paintAddButton" class="btn btn-success" type="button" disabled>
                   部屋を追加
@@ -1204,31 +1301,31 @@
               </div>
             </div>
 
-            <div class="col-auto">
+            <div class="control-toolbar-section">
               <button id="judgeButton" class="btn btn-danger" type="button">
                 判定する
               </button>
             </div>
 
-            <div class="col-auto">
-              <button id="rotateButton" class="btn btn-outline-primary" type="button" disabled>
-                選択家具を回転
+            <div class="control-toolbar-section">
+              <button id="rotateButton" class="btn btn-outline-primary" type="button" aria-label="選択家具を回転" title="選択家具を回転" disabled>
+                回転
               </button>
             </div>
 
-            <div class="col-auto">
-              <button id="deleteButton" class="btn btn-outline-danger" type="button" disabled>
-                選択した家具を削除
+            <div class="control-toolbar-section">
+              <button id="deleteButton" class="btn btn-outline-danger" type="button" aria-label="選択した家具を削除" title="選択した家具を削除" disabled>
+                削除
               </button>
             </div>
 
-            <div class="col-auto">
+            <div class="control-toolbar-section">
               <button id="resetButton" class="btn btn-secondary" type="button">
                 リセット
               </button>
             </div>
 
-            <div class="col-auto">
+            <div class="control-toolbar-section">
               <div class="form-check form-switch mb-0">
                 <input id="snapGridSwitch" class="form-check-input" type="checkbox" role="switch" checked>
                 <label class="form-check-label" for="snapGridSwitch">
@@ -1249,11 +1346,44 @@
     </div>
 
   </div>
+  <div id="mobileSheet" class="mobile-sheet" aria-label="スマホ用操作パネル">
+    <button id="mobileSheetHandle" class="mobile-sheet-handle" type="button" aria-expanded="false">
+      <span></span>
+    </button>
+
+    <div id="mobileSheetStatus" class="mobile-sheet-status">
+      家具を選んでください
+    </div>
+
+    <div id="mobileFurnitureChips" class="mobile-furniture-chips" aria-label="家具リスト"></div>
+
+    <div class="mobile-sheet-actions" aria-label="操作">
+      <button id="mobileFurnitureModeButton" class="btn btn-primary btn-sm" type="button">家具</button>
+      <button id="mobileLayoutModeButton" class="btn btn-outline-primary btn-sm" type="button">間取り</button>
+      <button id="mobileRotateButton" class="btn btn-outline-primary btn-sm" type="button" disabled>回転</button>
+      <button id="mobileDeleteButton" class="btn btn-outline-danger btn-sm" type="button" disabled>削除</button>
+      <button id="mobileJudgeButton" class="btn btn-danger btn-sm" type="button">判定</button>
+      <button id="mobileResetButton" class="btn btn-secondary btn-sm" type="button">リセット</button>
+    </div>
+
+    <div id="mobileLayoutTools" class="mobile-layout-tools">
+      <button id="mobilePaintAddButton" class="btn btn-success btn-sm" type="button">部屋を追加</button>
+      <button id="mobilePaintEraseButton" class="btn btn-outline-success btn-sm" type="button">部屋を消す</button>
+    </div>
+
+    <div id="mobileResultPanel" class="mobile-result-panel">
+      <div id="mobileResultText" class="mobile-result-text">判定結果：未判定</div>
+      <ul id="mobileReasonList" class="mobile-reason-list">
+        <li>判定すると理由が表示されます。</li>
+      </ul>
+    </div>
+  </div>
 <script>
   const COLS = 16;
   const ROWS = 10;
   const CELL = 40;
   const CELL_CM = 50;
+  const DRAG_DELETE_MARGIN = CELL * 2;
 
   const stage = document.getElementById("stage");
   const cellLayer = document.getElementById("cellLayer");
@@ -1293,6 +1423,20 @@
   const resultBox = document.getElementById("resultBox");
   const reasonList = document.getElementById("reasonList");
   const modeNote = document.getElementById("modeNote");
+  const mobileSheet = document.getElementById("mobileSheet");
+  const mobileSheetHandle = document.getElementById("mobileSheetHandle");
+  const mobileSheetStatus = document.getElementById("mobileSheetStatus");
+  const mobileFurnitureChips = document.getElementById("mobileFurnitureChips");
+  const mobileFurnitureModeButton = document.getElementById("mobileFurnitureModeButton");
+  const mobileLayoutModeButton = document.getElementById("mobileLayoutModeButton");
+  const mobileRotateButton = document.getElementById("mobileRotateButton");
+  const mobileDeleteButton = document.getElementById("mobileDeleteButton");
+  const mobileJudgeButton = document.getElementById("mobileJudgeButton");
+  const mobileResetButton = document.getElementById("mobileResetButton");
+  const mobilePaintAddButton = document.getElementById("mobilePaintAddButton");
+  const mobilePaintEraseButton = document.getElementById("mobilePaintEraseButton");
+  const mobileResultText = document.getElementById("mobileResultText");
+  const mobileReasonList = document.getElementById("mobileReasonList");
 
   let currentMode = "furniture";
   let paintMode = "add";
@@ -1301,6 +1445,9 @@
   let activeCells = new Set();
   let selectedFurnitureTemplate = null;
   let selectedTemplateItem = null;
+  let sheetPointerStartY = null;
+  let sheetPointerStartX = null;
+  let sheetSwipeHandled = false;
 
   const mobileLayoutQuery =
     typeof window !== "undefined" && window.matchMedia
@@ -1478,17 +1625,20 @@
       modeNote.textContent = isMobileLayout()
         ? "スマホ間取り編集：マスをタップして部屋を追加・削除できます。1マス = " + CELL_CM + "cmです。"
         : "間取り編集モード：マスをクリック、またはクリックしたままなぞると部屋をまとめて追加・削除できます。1マス = " + CELL_CM + "cmです。";
+      updateMobileControls();
       return;
     }
 
     if (selectedFurnitureTemplate && isMobileLayout()) {
       modeNote.textContent = selectedFurnitureTemplate.name + "を選択中：部屋のマスをタップすると配置できます。配置済み家具はタップして選択します。";
+      updateMobileControls();
       return;
     }
 
     modeNote.textContent = isMobileLayout()
       ? "スマホ家具配置：家具をタップして選び、部屋のマスをタップして配置します。"
       : "家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。1マス = " + CELL_CM + "cmです。";
+    updateMobileControls();
   }
 
   function updateMobileLayout() {
@@ -1516,12 +1666,151 @@
     updateModeNote();
   }
 
+  function setMobileSheetExpanded(expanded) {
+    if (!mobileSheet) return;
+
+    mobileSheet.classList.toggle("expanded", expanded);
+
+    if (mobileSheetHandle) {
+      mobileSheetHandle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    }
+  }
+
+  function syncMobileFurnitureChips() {
+    if (!mobileFurnitureChips) return;
+
+    mobileFurnitureChips.innerHTML = "";
+
+    Array.from(furnitureList.querySelectorAll(".furniture-item")).forEach(item => {
+      const chip = item.cloneNode(true);
+      chip.classList.remove("template-selected");
+      mobileFurnitureChips.appendChild(chip);
+    });
+  }
+
+  function updateMobileControls() {
+    if (!mobileSheet) return;
+
+    mobileSheet.classList.toggle("layout-mode", currentMode === "layout");
+    mobileFurnitureModeButton.classList.toggle("btn-primary", currentMode === "furniture");
+    mobileFurnitureModeButton.classList.toggle("btn-outline-primary", currentMode !== "furniture");
+    mobileLayoutModeButton.classList.toggle("btn-primary", currentMode === "layout");
+    mobileLayoutModeButton.classList.toggle("btn-outline-primary", currentMode !== "layout");
+
+    mobilePaintAddButton.classList.toggle("btn-success", paintMode === "add");
+    mobilePaintAddButton.classList.toggle("btn-outline-success", paintMode !== "add");
+    mobilePaintEraseButton.classList.toggle("btn-success", paintMode === "erase");
+    mobilePaintEraseButton.classList.toggle("btn-outline-success", paintMode !== "erase");
+
+    mobileRotateButton.disabled = !selectedFurniture;
+    mobileDeleteButton.disabled = !selectedFurniture;
+
+    Array.from(mobileFurnitureChips.querySelectorAll(".furniture-item")).forEach(item => {
+      const itemTemplate = getTemplateFromFurnitureItem(item);
+      const selected =
+        selectedFurnitureTemplate &&
+        selectedFurnitureTemplate.name === itemTemplate.name &&
+        selectedFurnitureTemplate.width === itemTemplate.width &&
+        selectedFurnitureTemplate.height === itemTemplate.height &&
+        selectedFurnitureTemplate.heightLevel === itemTemplate.heightLevel &&
+        selectedFurnitureTemplate.fixed === itemTemplate.fixed;
+
+      item.classList.toggle("template-selected", Boolean(selected));
+    });
+
+    if (currentMode === "layout") {
+      mobileSheetStatus.textContent =
+        paintMode === "add"
+          ? "間取り編集：追加したいマスをタップしてください。"
+          : "間取り編集：消したいマスをタップしてください。";
+      return;
+    }
+
+    if (selectedFurniture) {
+      mobileSheetStatus.textContent = (selectedFurniture.dataset.name || "家具") + "を選択中です。移動先のマスをタップすると移動できます。";
+      return;
+    }
+
+    if (selectedFurnitureTemplate) {
+      mobileSheetStatus.textContent = selectedFurnitureTemplate.name + "を選択中です。置きたいマスをタップしてください。";
+      return;
+    }
+
+    mobileSheetStatus.textContent = "家具を横にスワイプして選び、部屋のマスをタップして配置します。";
+  }
+
+  mobileSheetHandle.addEventListener("click", () => {
+    if (sheetSwipeHandled) {
+      sheetSwipeHandled = false;
+      return;
+    }
+
+    setMobileSheetExpanded(!mobileSheet.classList.contains("expanded"));
+  });
+
+  mobileSheet.addEventListener("pointerdown", event => {
+    if (!isMobileLayout()) return;
+
+    sheetPointerStartY = event.clientY;
+    sheetPointerStartX = event.clientX;
+    sheetSwipeHandled = false;
+  });
+
+  mobileSheet.addEventListener("pointerup", event => {
+    if (sheetPointerStartY === null || sheetPointerStartX === null) return;
+
+    const diffY = event.clientY - sheetPointerStartY;
+    const diffX = Math.abs(event.clientX - sheetPointerStartX);
+
+    if (Math.abs(diffY) > 48 && Math.abs(diffY) > diffX * 1.2) {
+      setMobileSheetExpanded(diffY < 0);
+      sheetSwipeHandled = true;
+    }
+
+    sheetPointerStartY = null;
+    sheetPointerStartX = null;
+  });
+
+  mobileFurnitureModeButton.addEventListener("click", () => {
+    furnitureModeButton.click();
+  });
+
+  mobileLayoutModeButton.addEventListener("click", () => {
+    layoutModeButton.click();
+  });
+
+  mobileRotateButton.addEventListener("click", () => {
+    rotateButton.click();
+  });
+
+  mobileDeleteButton.addEventListener("click", () => {
+    deleteButton.click();
+  });
+
+  mobileJudgeButton.addEventListener("click", () => {
+    judgeButton.click();
+    setMobileSheetExpanded(true);
+  });
+
+  mobileResetButton.addEventListener("click", () => {
+    resetButton.click();
+  });
+
+  mobilePaintAddButton.addEventListener("click", () => {
+    paintAddButton.click();
+  });
+
+  mobilePaintEraseButton.addEventListener("click", () => {
+    paintEraseButton.click();
+  });
+
   paintAddButton.addEventListener("click", () => {
     paintMode = "add";
     paintAddButton.classList.remove("btn-outline-success");
     paintAddButton.classList.add("btn-success");
     paintEraseButton.classList.remove("btn-success");
     paintEraseButton.classList.add("btn-outline-success");
+    updateMobileControls();
   });
 
   paintEraseButton.addEventListener("click", () => {
@@ -1530,6 +1819,7 @@
     paintEraseButton.classList.add("btn-success");
     paintAddButton.classList.remove("btn-success");
     paintAddButton.classList.add("btn-outline-success");
+    updateMobileControls();
   });
 
   stage.addEventListener("pointerdown", event => {
@@ -1624,6 +1914,28 @@
     document.addEventListener("pointerup", onPointerUp);
   });
 
+  mobileFurnitureChips.addEventListener("click", event => {
+    if (currentMode !== "furniture") {
+      furnitureModeButton.click();
+    }
+
+    const item = event.target.closest(".furniture-item");
+    if (!item) return;
+
+    selectFurnitureTemplate(item, getTemplateFromFurnitureItem(item));
+    setMobileSheetExpanded(false);
+  });
+
+  function getTemplateFromFurnitureItem(item) {
+    return {
+      name: item.dataset.name,
+      width: Number(item.dataset.width),
+      height: Number(item.dataset.height),
+      heightLevel: item.dataset.heightLevel || "中",
+      fixed: item.dataset.fixed === "true"
+    };
+  }
+
   function createFurniture(name, width, height, heightLevel = "中", fixed = false) {
     const furniture = document.createElement("div");
 
@@ -1698,6 +2010,12 @@
       return;
     }
 
+    if (isMobileLayout() && selectedFurniture && isEmptyStageTarget(event.target)) {
+      event.preventDefault();
+      moveSelectedFurnitureToPointer(event.clientX, event.clientY);
+      return;
+    }
+
     if (event.target === stage || event.target === furnitureLayer) {
       clearSelection();
     }
@@ -1760,6 +2078,29 @@
     resetResult();
   }
 
+  function moveSelectedFurnitureToPointer(clientX, clientY) {
+    const pos = getStagePosition(clientX, clientY);
+    if (!pos || !selectedFurniture) return;
+
+    const col = Math.floor(pos.x / CELL);
+    const row = Math.floor(pos.y / CELL);
+
+    if (!hasCell(row, col)) return;
+
+    const bounds = snapFurnitureBounds(
+      col * CELL,
+      row * CELL,
+      selectedFurniture.offsetWidth,
+      selectedFurniture.offsetHeight
+    );
+
+    selectedFurniture.style.left = bounds.left + "px";
+    selectedFurniture.style.top = bounds.top + "px";
+
+    resetResult();
+    updateMobileControls();
+  }
+
   function selectFurniture(furniture) {
     clearSelectedTemplate();
     clearSelection();
@@ -1771,6 +2112,8 @@
     if (isMobileLayout()) {
       modeNote.textContent = (furniture.dataset.name || "家具") + "を選択中：下のボタンで回転・削除できます。";
     }
+
+    updateMobileControls();
   }
 
   function clearSelection() {
@@ -1785,6 +2128,8 @@
     if (isMobileLayout() && currentMode === "furniture" && !selectedFurnitureTemplate) {
       updateModeNote();
     }
+
+    updateMobileControls();
   }
 
   function openEditPopover(furniture) {
@@ -2051,6 +2396,7 @@
 
     if (pointerMode === "moveFurniture") {
       moveFurnitureInStage(event.clientX, event.clientY);
+      updateDeleteDropPreview(event.clientX, event.clientY);
     }
 
     if (pointerMode === "resizeFurniture") {
@@ -2065,6 +2411,12 @@
   function onPointerUp(event) {
     if (pointerMode === "newFurniture") {
       placeNewFurniture(event);
+    }
+
+    if (pointerMode === "moveFurniture" && shouldDeleteByOutsideDrop(event.clientX, event.clientY)) {
+      deleteDraggedFurniture();
+    } else if (draggingElement) {
+      draggingElement.classList.remove("delete-pending");
     }
 
     draggingElement = null;
@@ -2100,6 +2452,44 @@
   function moveElementOnPage(pageX, pageY) {
     draggingElement.style.left = pageX - offsetX + "px";
     draggingElement.style.top = pageY - offsetY + "px";
+  }
+
+  function shouldDeleteByOutsideDrop(clientX, clientY) {
+    const stageRect = stage.getBoundingClientRect();
+
+    return (
+      clientX < stageRect.left - DRAG_DELETE_MARGIN ||
+      clientX > stageRect.right + DRAG_DELETE_MARGIN ||
+      clientY < stageRect.top - DRAG_DELETE_MARGIN ||
+      clientY > stageRect.bottom + DRAG_DELETE_MARGIN
+    );
+  }
+
+  function updateDeleteDropPreview(clientX, clientY) {
+    if (!draggingElement) return;
+
+    draggingElement.classList.toggle(
+      "delete-pending",
+      shouldDeleteByOutsideDrop(clientX, clientY)
+    );
+  }
+
+  function deleteDraggedFurniture() {
+    if (!draggingElement) return;
+
+    const removedFurniture = draggingElement;
+    removedFurniture.classList.remove("dragging", "delete-pending");
+    removedFurniture.remove();
+
+    if (selectedFurniture === removedFurniture) {
+      selectedFurniture = null;
+      rotateButton.disabled = true;
+      deleteButton.disabled = true;
+      hideEditPopover();
+      updateMobileControls();
+    }
+
+    resetResult();
   }
 
   function moveFurnitureInStage(clientX, clientY) {
@@ -2269,6 +2659,7 @@
     `;
 
     furnitureList.appendChild(item);
+    syncMobileFurnitureChips();
 
     customFurnitureName.value = "";
     customFurnitureHeight.value = "中";
@@ -2340,6 +2731,7 @@
   resetButton.addEventListener("click", () => {
     furnitureLayer.innerHTML = "";
 
+    clearSelectedTemplate();
     clearSelection();
     setInitialRoom();
     renderRoom();
@@ -2474,14 +2866,32 @@
     }
 
     renderReasons(reasons);
+    renderMobileResult(level, reasons);
   }
 
   function resetResult() {
     resultBox.textContent = "判定結果：未判定";
     resultBox.classList.remove("risk-low", "risk-middle", "risk-high");
     resultBox.classList.add("risk-none");
+    renderMobileResult(null, ["判定すると理由が表示されます。"]);
     renderReasons(["判定すると理由が表示されます。"]);
     clearVisualLayers();
+  }
+
+  function renderMobileResult(level, reasons) {
+    if (!mobileResultText || !mobileReasonList) return;
+
+    mobileResultText.textContent = level
+      ? "判定結果：危険度 " + level
+      : "判定結果：未判定";
+
+    mobileReasonList.innerHTML = "";
+
+    reasons.forEach(reason => {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      mobileReasonList.appendChild(item);
+    });
   }
 
   function renderReasons(reasons) {
@@ -2997,6 +3407,7 @@
     });
   }
 
+  syncMobileFurnitureChips();
   setInitialRoom();
   renderRoom();
   setMode("furniture");
