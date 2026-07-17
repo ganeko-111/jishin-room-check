@@ -267,6 +267,12 @@
       transform: translateY(-1px);
     }
 
+    .furniture-item.template-selected {
+      border-color: var(--brand-main);
+      background-color: var(--brand-main-soft);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    }
+
     .furniture-item:active {
       cursor: grabbing;
     }
@@ -371,6 +377,44 @@
     }
 
     .danger-cell.strong {
+      background-color: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .visual-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 10px;
+      color: var(--brand-muted);
+      font-size: 0.85rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .legend-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .legend-route {
+      background-color: rgba(37, 99, 235, 0.14);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    .legend-danger {
+      background-color: rgba(245, 158, 11, 0.22);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .legend-danger-strong {
       background-color: rgba(239, 68, 68, 0.2);
       border: 1px solid rgba(239, 68, 68, 0.35);
     }
@@ -751,6 +795,18 @@
       font-weight: 600;
     }
 
+    .control-area .form-check {
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      gap: 6px;
+    }
+
+    .control-area .form-check-label {
+      color: var(--brand-text);
+      font-weight: 600;
+    }
+
     @media (max-width: 1199px) {
       .result-panel {
         min-height: auto;
@@ -758,6 +814,14 @@
     }
 
     @media (max-width: 767px) {
+      body {
+        padding-bottom: 190px;
+      }
+
+      .container-fluid {
+        padding: 10px !important;
+      }
+
       .brand-navbar .container-fluid {
         flex-wrap: wrap;
         gap: 8px;
@@ -788,7 +852,22 @@
       }
 
       .side-panel {
-        min-height: 280px;
+        min-height: auto;
+      }
+
+      .furniture-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 4px 8px 0;
+        flex: none;
+      }
+
+      .furniture-item {
+        min-width: 112px;
+        margin-bottom: 0;
+        padding: 10px;
+        font-size: 0.92rem;
       }
 
       .main-header {
@@ -798,6 +877,71 @@
 
       .result-box {
         font-size: 1.15rem;
+      }
+
+      .stage-wrap {
+        overflow: hidden;
+        padding: 8px;
+      }
+
+      .stage {
+        margin: 0;
+        transform-origin: top left;
+      }
+
+      .resize-handle {
+        display: none !important;
+      }
+
+      .edit-trigger {
+        width: 30px;
+        height: 30px;
+        top: -14px;
+        right: -14px;
+      }
+
+      .visual-legend {
+        gap: 8px;
+      }
+
+      .control-area {
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        z-index: 120;
+        max-height: 46vh;
+        overflow-y: auto;
+        border-radius: 14px;
+        box-shadow: 0 16px 34px rgba(31, 41, 55, 0.18);
+      }
+
+      .control-area .row {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+      }
+
+      .control-area .col-auto {
+        flex: 1 1 calc(50% - 0.5rem);
+      }
+
+      .control-area .btn,
+      .control-area .btn-group,
+      .control-area .form-check {
+        width: 100%;
+      }
+
+      .control-area .btn {
+        min-height: 44px;
+        white-space: normal;
+      }
+
+      .control-area .form-check {
+        justify-content: center;
+        min-height: 44px;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        background-color: #ffffff;
       }
     }
   </style>
@@ -991,6 +1135,21 @@
                   </div>
                 </div>
               </div>
+
+              <div class="visual-legend" aria-label="判定表示の凡例">
+                <span class="legend-item">
+                  <span class="legend-swatch legend-route"></span>
+                  避難できる範囲
+                </span>
+                <span class="legend-item">
+                  <span class="legend-swatch legend-danger"></span>
+                  注意ゾーン
+                </span>
+                <span class="legend-item">
+                  <span class="legend-swatch legend-danger-strong"></span>
+                  危険ゾーン
+                </span>
+              </div>
             </div>
           </div>
 
@@ -1052,6 +1211,12 @@
             </div>
 
             <div class="col-auto">
+              <button id="rotateButton" class="btn btn-outline-primary" type="button" disabled>
+                選択家具を回転
+              </button>
+            </div>
+
+            <div class="col-auto">
               <button id="deleteButton" class="btn btn-outline-danger" type="button" disabled>
                 選択した家具を削除
               </button>
@@ -1061,6 +1226,15 @@
               <button id="resetButton" class="btn btn-secondary" type="button">
                 リセット
               </button>
+            </div>
+
+            <div class="col-auto">
+              <div class="form-check form-switch mb-0">
+                <input id="snapGridSwitch" class="form-check-input" type="checkbox" role="switch" checked>
+                <label class="form-check-label" for="snapGridSwitch">
+                  グリッド吸着
+                </label>
+              </div>
             </div>
 
           </div>
@@ -1075,9 +1249,6 @@
     </div>
 
   </div>
-```
-
-```html
 <script>
   const COLS = 16;
   const ROWS = 10;
@@ -1115,16 +1286,30 @@
   const paintAddButton = document.getElementById("paintAddButton");
   const paintEraseButton = document.getElementById("paintEraseButton");
   const judgeButton = document.getElementById("judgeButton");
+  const rotateButton = document.getElementById("rotateButton");
   const deleteButton = document.getElementById("deleteButton");
   const resetButton = document.getElementById("resetButton");
+  const snapGridSwitch = document.getElementById("snapGridSwitch");
   const resultBox = document.getElementById("resultBox");
   const reasonList = document.getElementById("reasonList");
   const modeNote = document.getElementById("modeNote");
 
   let currentMode = "furniture";
   let paintMode = "add";
+  let gridSnapEnabled = true;
 
   let activeCells = new Set();
+  let selectedFurnitureTemplate = null;
+  let selectedTemplateItem = null;
+
+  const mobileLayoutQuery =
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(max-width: 767px)")
+      : {
+          matches: false,
+          addEventListener() {},
+          removeEventListener() {}
+        };
 
   let doorState = {
     row: 1,
@@ -1252,6 +1437,7 @@
     clearSelection();
 
     if (mode === "layout") {
+      clearSelectedTemplate();
       stage.classList.remove("furniture-mode");
       stage.classList.add("layout-mode");
 
@@ -1264,8 +1450,6 @@
       paintAddButton.disabled = false;
       paintEraseButton.disabled = false;
       deleteButton.disabled = true;
-
-      modeNote.textContent = "間取り編集モード：マスをクリック、またはクリックしたままなぞると部屋をまとめて追加・削除できます。1マス = " + CELL_CM + "cmです。";
     }
 
     if (mode === "furniture") {
@@ -1280,9 +1464,56 @@
 
       paintAddButton.disabled = true;
       paintEraseButton.disabled = true;
-
-      modeNote.textContent = "家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。1マス = " + CELL_CM + "cmです。";
     }
+
+    updateModeNote();
+  }
+
+  function isMobileLayout() {
+    return mobileLayoutQuery.matches;
+  }
+
+  function updateModeNote() {
+    if (currentMode === "layout") {
+      modeNote.textContent = isMobileLayout()
+        ? "スマホ間取り編集：マスをタップして部屋を追加・削除できます。1マス = " + CELL_CM + "cmです。"
+        : "間取り編集モード：マスをクリック、またはクリックしたままなぞると部屋をまとめて追加・削除できます。1マス = " + CELL_CM + "cmです。";
+      return;
+    }
+
+    if (selectedFurnitureTemplate && isMobileLayout()) {
+      modeNote.textContent = selectedFurnitureTemplate.name + "を選択中：部屋のマスをタップすると配置できます。配置済み家具はタップして選択します。";
+      return;
+    }
+
+    modeNote.textContent = isMobileLayout()
+      ? "スマホ家具配置：家具をタップして選び、部屋のマスをタップして配置します。"
+      : "家具配置モード：左の家具を間取りにドラッグできます。出口は外周の壁に沿って動きます。1マス = " + CELL_CM + "cmです。";
+  }
+
+  function updateMobileLayout() {
+    const wrap = stage.parentElement;
+
+    if (!wrap) return;
+
+    if (!isMobileLayout()) {
+      stage.style.transform = "";
+      stage.style.transformOrigin = "";
+      stage.style.margin = "";
+      wrap.style.height = "";
+      updateModeNote();
+      return;
+    }
+
+    const availableWidth = Math.max(280, wrap.clientWidth - 16);
+    const scale = Math.min(1, availableWidth / (COLS * CELL));
+
+    stage.style.transform = "scale(" + scale + ")";
+    stage.style.transformOrigin = "top left";
+    stage.style.margin = "0";
+    wrap.style.height = ROWS * CELL * scale + 16 + "px";
+
+    updateModeNote();
   }
 
   paintAddButton.addEventListener("click", () => {
@@ -1364,6 +1595,17 @@
     const heightLevel = item.dataset.heightLevel || "中";
     const fixed = item.dataset.fixed === "true";
 
+    if (isMobileLayout()) {
+      selectFurnitureTemplate(item, {
+        name,
+        width,
+        height,
+        heightLevel,
+        fixed
+      });
+      return;
+    }
+
     const newFurniture = createFurniture(name, width, height, heightLevel, fixed);
 
     document.body.appendChild(newFurniture);
@@ -1430,6 +1672,10 @@
 
       selectFurniture(furniture);
 
+      if (isMobileLayout()) {
+        return;
+      }
+
       draggingElement = furniture;
       pointerMode = "moveFurniture";
 
@@ -1446,16 +1692,85 @@
   stage.addEventListener("pointerdown", event => {
     if (currentMode !== "furniture") return;
 
+    if (isMobileLayout() && selectedFurnitureTemplate && isEmptyStageTarget(event.target)) {
+      event.preventDefault();
+      placeSelectedTemplateAtPointer(event.clientX, event.clientY);
+      return;
+    }
+
     if (event.target === stage || event.target === furnitureLayer) {
       clearSelection();
     }
   });
 
+  function selectFurnitureTemplate(item, template) {
+    clearSelection();
+    clearSelectedTemplate();
+
+    selectedTemplateItem = item;
+    selectedFurnitureTemplate = template;
+    selectedTemplateItem.classList.add("template-selected");
+
+    updateModeNote();
+  }
+
+  function clearSelectedTemplate() {
+    if (selectedTemplateItem) {
+      selectedTemplateItem.classList.remove("template-selected");
+    }
+
+    selectedTemplateItem = null;
+    selectedFurnitureTemplate = null;
+  }
+
+  function isEmptyStageTarget(target) {
+    return target === stage || target === furnitureLayer || target.closest(".grid-cell");
+  }
+
+  function placeSelectedTemplateAtPointer(clientX, clientY) {
+    const pos = getStagePosition(clientX, clientY);
+    if (!pos || !selectedFurnitureTemplate) return;
+
+    const col = Math.floor(pos.x / CELL);
+    const row = Math.floor(pos.y / CELL);
+
+    if (!hasCell(row, col)) return;
+
+    const furniture = createFurniture(
+      selectedFurnitureTemplate.name,
+      selectedFurnitureTemplate.width,
+      selectedFurnitureTemplate.height,
+      selectedFurnitureTemplate.heightLevel,
+      selectedFurnitureTemplate.fixed
+    );
+    const bounds = snapFurnitureBounds(
+      col * CELL,
+      row * CELL,
+      selectedFurnitureTemplate.width,
+      selectedFurnitureTemplate.height
+    );
+
+    furniture.style.left = bounds.left + "px";
+    furniture.style.top = bounds.top + "px";
+    furniture.style.width = bounds.width + "px";
+    furniture.style.height = bounds.height + "px";
+
+    furnitureLayer.appendChild(furniture);
+    selectFurniture(furniture);
+    resetResult();
+  }
+
   function selectFurniture(furniture) {
+    clearSelectedTemplate();
     clearSelection();
     selectedFurniture = furniture;
     selectedFurniture.classList.add("selected");
+    rotateButton.disabled = false;
     deleteButton.disabled = false;
+
+    if (isMobileLayout()) {
+      modeNote.textContent = (furniture.dataset.name || "家具") + "を選択中：下のボタンで回転・削除できます。";
+    }
   }
 
   function clearSelection() {
@@ -1463,8 +1778,13 @@
       selectedFurniture.classList.remove("selected");
     }
     selectedFurniture = null;
+    rotateButton.disabled = true;
     deleteButton.disabled = true;
     hideEditPopover();
+
+    if (isMobileLayout() && currentMode === "furniture" && !selectedFurnitureTemplate) {
+      updateModeNote();
+    }
   }
 
   function openEditPopover(furniture) {
@@ -1878,14 +2198,17 @@
   }
 
   function snapFurnitureBounds(left, top, width, height) {
-    let snappedWidth = Math.max(minFurnitureSize, snapToGrid(width));
-    let snappedHeight = Math.max(minFurnitureSize, snapToGrid(height));
+    let snappedWidth = gridSnapEnabled ? snapToGrid(width) : width;
+    let snappedHeight = gridSnapEnabled ? snapToGrid(height) : height;
+
+    snappedWidth = Math.max(minFurnitureSize, snappedWidth);
+    snappedHeight = Math.max(minFurnitureSize, snappedHeight);
 
     snappedWidth = Math.min(snappedWidth, stage.clientWidth);
     snappedHeight = Math.min(snappedHeight, stage.clientHeight);
 
-    let snappedLeft = snapToGrid(left);
-    let snappedTop = snapToGrid(top);
+    let snappedLeft = gridSnapEnabled ? snapToGrid(left) : left;
+    let snappedTop = gridSnapEnabled ? snapToGrid(top) : top;
 
     snappedLeft = Math.max(0, Math.min(snappedLeft, stage.clientWidth - snappedWidth));
     snappedTop = Math.max(0, Math.min(snappedTop, stage.clientHeight - snappedHeight));
@@ -1978,6 +2301,32 @@
 
   closeEditButton.addEventListener("click", () => {
     hideEditPopover();
+  });
+
+  rotateButton.addEventListener("click", () => {
+    rotateSelectedFurniture();
+  });
+
+  function rotateSelectedFurniture() {
+    if (!selectedFurniture) return;
+
+    const bounds = snapFurnitureBounds(
+      selectedFurniture.offsetLeft,
+      selectedFurniture.offsetTop,
+      selectedFurniture.offsetHeight,
+      selectedFurniture.offsetWidth
+    );
+
+    selectedFurniture.style.left = bounds.left + "px";
+    selectedFurniture.style.top = bounds.top + "px";
+    selectedFurniture.style.width = bounds.width + "px";
+    selectedFurniture.style.height = bounds.height + "px";
+
+    resetResult();
+  }
+
+  snapGridSwitch.addEventListener("change", () => {
+    gridSnapEnabled = snapGridSwitch.checked;
   });
 
   deleteButton.addEventListener("click", () => {
@@ -2618,9 +2967,11 @@
 
   function getStagePosition(clientX, clientY) {
     const rect = stage.getBoundingClientRect();
+    const scaleX = rect.width === 0 ? 1 : stage.clientWidth / rect.width;
+    const scaleY = rect.height === 0 ? 1 : stage.clientHeight / rect.height;
 
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     if (x < 0 || y < 0 || x > stage.clientWidth || y > stage.clientHeight) {
       return null;
@@ -2638,14 +2989,22 @@
     hideEditPopover();
   });
 
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", updateMobileLayout);
+    mobileLayoutQuery.addEventListener("change", () => {
+      clearSelectedTemplate();
+      updateMobileLayout();
+    });
+  }
+
   setInitialRoom();
   renderRoom();
   setMode("furniture");
+  updateMobileLayout();
   resetResult();
 </script>
 
 </body>
 </html>
-```
 
 
